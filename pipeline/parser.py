@@ -1,0 +1,200 @@
+"""Parse CSKH and MB_Email Excel files from bytes — no disk I/O."""
+import hashlib
+import io
+from datetime import datetime
+
+import openpyxl
+
+from pipeline.classify import _norm, detect_email_product
+
+_LOAI_MAP_NEW = {
+    "cuộc gọi đến":    "Gọi vào",
+    "cuộc gọi ra":     "Gọi ra",
+    "cuộc gọi đi":     "Gọi ra",
+    "email - litex":   "Email LiteX",
+    "email":           "Email LiteX",
+    "email - mb 24/7": "Email MB",
+    "email mb247":     "Email MB",
+    "mạng xã hội":    "Mạng xã hội",
+}
+
+_LOAI_MAP_OLD = {
+    "email":          "Email LiteX",
+    "email mb247":    "Email MB",
+    "cuộc gọi đi":   "Gọi ra",
+    "mạng xã hội":   "Mạng xã hội",
+}
+
+_KQMAP_NEW = {
+    "kq_huy_dv":              "Yêu cầu hủy",
+    "kq_huong_dan_huy_app":   "Yêu cầu hủy",
+    "kq_tiep_tuc_su_dung":    "KH tiếp tục sử dụng",
+    "kq_khong_co_kq_huy":     "Không có kết quả",
+    "kq_khong_co_kq_khac":    "Không có kết quả",
+    "kq_khong_co_kq_bt":      "Không có kết quả",
+    "kq_hoan_thanh_tu_van":   "Hoàn thành tư vấn",
+    "kq_hoan_thanh_khac":     "Hoàn thành tư vấn",
+}
+
+
+def _parse_date(val) -> "datetime.date | None":
+    if val is None:
+        return None
+    if hasattr(val, "date"):
+        return val.date()
+    if isinstance(val, str):
+        s = val.strip()
+        for fmt in ("%d/%m/%Y %H:%M:%S", "%d/%m/%Y %H:%M", "%d/%m/%Y"):
+            try:
+                return datetime.strptime(s, fmt).date()
+            except ValueError:
+                continue
+    return None
+
+
+def _make_old_format_id(filename: str, row_vals: tuple) -> str:
+    raw = filename + "|" + "|".join("" if v is None else str(v) for v in row_vals)
+    return "old_" + hashlib.sha256(raw.encode("utf-8", errors="replace")).hexdigest()[:32]
+
+
+def _get_product(raw: str, product_normalize: dict) -> str:
+    key = raw.strip()
+    if key in product_normalize:
+        return product_normalize[key]
+    if key in product_normalize.values():
+        return key
+    return next(iter(product_normalize.values()), "Khác")
+
+
+def _is_new_format(ws) -> bool:
+    h = ws.cell(1, 3).value or ""
+    return "loại cuộc gọi" not in _norm(str(h))
+
+
+def parse_cskh_bytes(
+    file_bytes: bytes,
+    filename: str,
+    product_normalize: dict,
+) -> list[dict]:
+    """Parse a CSKH Excel file (bytes) into rows ready for cskh_raw upsert.
+
+    Returns list of dicts with keys:
+      id, ma_phieu, source_file, format, event_date,
+      loai, loai_kn, noi_dung, ket_qua, product
+    """
+    wb = openpyxl.load_workbook(io.BytesIO(file_bytes), read_only=True, data_only=True)
+    ws = wb.active
+    is_new = _is_new_format(ws)
+    rows = []
+
+    if is_new:
+        for r in range(2, ws.max_row + 1):
+            ma_phieu = ws.cell(r, 2).value
+            loai_raw = ws.cell(r, 8).value
+            loai_kn  = ws.cell(r, 10).value
+            noi_dung = ws.cell(r, 13).value
+            sp_raw   = ws.cell(r, 14).value
+            kq_raw   = ws.cell(r, 15).value
+            d_val    = ws.cell(r, 16).value
+
+            dt = _parse_date(d_val)
+            if dt is None or not loai_raw:
+                continue
+
+            loai    = _LOAI_MAP_NEW.get(_norm(str(loai_raw).strip()), str(loai_raw).strip())
+            kq_key  = str(kq_raw).strip() if kq_raw else ""
+            kq      = _KQMAP_NEW.get(kq_key, kq_key)
+            product = _get_product(str(sp_raw).strip() if sp_raw else "", product_normalize)
+
+            rows.append({
+                "id":          str(ma_phieu) if ma_phieu is not None else _make_old_format_id(filename, (r,)),
+                "ma_phieu":    str(ma_phieu) if ma_phieu is not None else None,
+                "source_file": filename,
+                "format":      "new",
+                "event_date":  dt,
+                "loai":        loai,
+                "loai_kn":     str(loai_kn).strip() if loai_kn else "",
+                "noi_dung":    str(noi_dung).strip() if noi_dung else "",
+                "ket_qua":     kq,
+                "product":     product,
+            })
+    else:
+        for r in range(2, ws.max_row + 1):
+            d_val    = ws.cell(r, 2).value
+            loai_raw = ws.cell(r, 3).value
+            loai_kn  = ws.cell(r, 11).value
+            noi_dung = ws.cell(r, 14).value
+            sp_raw   = ws.cell(r, 15).value
+            ket_qua  = ws.cell(r, 16).value
+
+            dt = _parse_date(d_val)
+            if dt is None or not loai_raw:
+                continue
+
+            row_vals = tuple(ws.cell(r, c).value for c in range(1, ws.max_column + 1))
+            row_id   = _make_old_format_id(filename, row_vals)
+
+            loai    = _LOAI_MAP_OLD.get(_norm(str(loai_raw).strip()), str(loai_raw).strip())
+            product = _get_product(str(sp_raw).strip() if sp_raw else "", product_normalize)
+
+            rows.append({
+                "id":          row_id,
+                "ma_phieu":    None,
+                "source_file": filename,
+                "format":      "old",
+                "event_date":  dt,
+                "loai":        loai,
+                "loai_kn":     str(loai_kn).strip() if loai_kn else "",
+                "noi_dung":    str(noi_dung).strip() if noi_dung else "",
+                "ket_qua":     str(ket_qua).strip() if ket_qua else "",
+                "product":     product,
+            })
+
+    wb.close()
+    return rows
+
+
+def parse_mb_email_bytes(
+    file_bytes: bytes,
+    filename: str,
+    product_keywords: list[tuple[str, str]],
+) -> list[dict]:
+    """Parse an MB_Email Excel file (bytes) into rows ready for mb_email_raw upsert.
+
+    Returns list of dicts with keys:
+      ticket_id, source_file, event_date, content, product
+    """
+    wb = openpyxl.load_workbook(io.BytesIO(file_bytes), read_only=True, data_only=True)
+    ws = wb.active
+    rows = []
+
+    for r in range(2, ws.max_row + 1):
+        d_val     = ws.cell(r, 10).value
+        ticket_id = ws.cell(r, 1).value
+        content   = ws.cell(r, 19).value
+
+        if not d_val or not ticket_id:
+            continue
+
+        dt = _parse_date(d_val)
+        if dt is None:
+            continue
+
+        # MB_Email date columns are sometimes swapped (day/month)
+        try:
+            dt = dt.replace(month=dt.day, day=dt.month)
+        except ValueError:
+            pass
+
+        product = detect_email_product(str(content) if content else "", product_keywords)
+
+        rows.append({
+            "ticket_id":   str(ticket_id),
+            "source_file": filename,
+            "event_date":  dt,
+            "content":     str(content) if content else "",
+            "product":     product,
+        })
+
+    wb.close()
+    return rows
