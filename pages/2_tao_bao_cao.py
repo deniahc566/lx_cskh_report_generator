@@ -1,6 +1,8 @@
 """Page 2 — Generate and download CSKH Excel reports."""
 from __future__ import annotations
 
+import io
+import zipfile
 from collections import defaultdict
 from datetime import date, timedelta
 
@@ -131,15 +133,25 @@ if st.button("Tạo báo cáo", type="primary"):
     d0 = date_from.strftime("%d%m")
     d1 = date_to.strftime("%d%m_%Y")
 
-    if report_bytes_real:
+    if report_bytes_real and report_bytes_mb:
+        buf = io.BytesIO()
+        with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zf:
+            zf.writestr(f"BC_CSKH_{d0}_{d1}.xlsx", report_bytes_real)
+            zf.writestr(f"BC_CSKH_mb_{d0}_{d1}.xlsx", report_bytes_mb)
+        st.download_button(
+            label="Tải cả hai báo cáo (.zip)",
+            data=buf.getvalue(),
+            file_name=f"BC_CSKH_{d0}_{d1}.zip",
+            mime="application/zip",
+        )
+    elif report_bytes_real:
         st.download_button(
             label="Tải Báo cáo Thật (.xlsx)",
             data=report_bytes_real,
             file_name=f"BC_CSKH_{d0}_{d1}.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         )
-
-    if report_bytes_mb:
+    elif report_bytes_mb:
         st.download_button(
             label="Tải Báo cáo MB (.xlsx)",
             data=report_bytes_mb,

@@ -62,8 +62,8 @@ def fetch_kh_active(
     stats_req = urllib.request.Request(
         f"{base_url}/api/report/order-statistics",
         data=json.dumps({
-            "ctime": {"start_ts": start_ts, "end_ts": int(time.time())},
-            "granularity": "DAY",
+            "ctime": {"start_date": start_ts, "end_date": int(time.time())},
+            "granularity": 2,
             "sub_order_types": sub_order_types,
             "partner_codes":   partner_codes,
             "draft_stuck_threshold_hours": 24,
