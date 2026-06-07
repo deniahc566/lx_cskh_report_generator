@@ -30,7 +30,7 @@ def upsert_cskh_rows(rows: list[dict]) -> int:
     df = df.drop_duplicates(subset=["id"], keep="last")
     conn.execute("DELETE FROM cskh_raw WHERE source_file = ?", [source_file])
     conn.register("_tmp_cskh", df)
-    conn.execute("INSERT INTO cskh_raw SELECT * FROM _tmp_cskh")
+    conn.execute("INSERT OR IGNORE INTO cskh_raw SELECT * FROM _tmp_cskh")
     conn.unregister("_tmp_cskh")
     return len(df)
 
