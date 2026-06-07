@@ -4,6 +4,7 @@ from __future__ import annotations
 from datetime import date, datetime
 
 import duckdb
+import pandas as pd
 import streamlit as st
 
 
@@ -19,41 +20,33 @@ def upsert_cskh_rows(rows: list[dict]) -> int:
     if not rows:
         return 0
     conn = get_conn()
-    inserted = 0
-    for r in rows:
-        conn.execute(
-            """
-            INSERT OR REPLACE INTO cskh_raw
-                (id, ma_phieu, source_file, format, event_date,
-                 loai, loai_kn, noi_dung, ket_qua, product, uploaded_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, now())
-            """,
-            [
-                r["id"], r.get("ma_phieu"), r["source_file"], r["format"],
-                r["event_date"], r["loai"], r["loai_kn"],
-                r["noi_dung"], r["ket_qua"], r["product"],
-            ],
-        )
-        inserted += 1
-    return inserted
+    source_file = rows[0]["source_file"]
+    df = pd.DataFrame(rows)
+    df["uploaded_at"] = datetime.utcnow()
+    if "thai_do" not in df.columns:
+        df["thai_do"] = ""
+    df = df[["id", "ma_phieu", "source_file", "format", "event_date",
+             "loai", "loai_kn", "noi_dung", "ket_qua", "product", "uploaded_at", "thai_do"]]
+    conn.execute("DELETE FROM cskh_raw WHERE source_file = ?", [source_file])
+    conn.register("_tmp_cskh", df)
+    conn.execute("INSERT INTO cskh_raw SELECT * FROM _tmp_cskh")
+    conn.unregister("_tmp_cskh")
+    return len(df)
 
 
 def upsert_mb_email_rows(rows: list[dict]) -> int:
     if not rows:
         return 0
     conn = get_conn()
-    inserted = 0
-    for r in rows:
-        conn.execute(
-            """
-            INSERT OR REPLACE INTO mb_email_raw
-                (ticket_id, source_file, event_date, content, product, uploaded_at)
-            VALUES (?, ?, ?, ?, ?, now())
-            """,
-            [r["ticket_id"], r["source_file"], r["event_date"], r["content"], r["product"]],
-        )
-        inserted += 1
-    return inserted
+    source_file = rows[0]["source_file"]
+    df = pd.DataFrame(rows)
+    df["uploaded_at"] = datetime.utcnow()
+    df = df[["ticket_id", "source_file", "event_date", "content", "product", "uploaded_at"]]
+    conn.execute("DELETE FROM mb_email_raw WHERE source_file = ?", [source_file])
+    conn.register("_tmp_email", df)
+    conn.execute("INSERT INTO mb_email_raw SELECT * FROM _tmp_email")
+    conn.unregister("_tmp_email")
+    return len(df)
 
 
 # ── Fetch ─────────────────────────────────────────────────────────────────────
@@ -69,13 +62,14 @@ def fetch_cskh_rows(
     conn = get_conn()
     where, params = _date_filter(date_from, date_to, col="event_date")
     sql = f"""
-        SELECT id, event_date, loai, loai_kn, noi_dung, ket_qua, product
+        SELECT id, event_date, loai, loai_kn, noi_dung, ket_qua, product,
+               COALESCE(thai_do, '') AS thai_do
         FROM cskh_raw
         {where}
         ORDER BY event_date
     """
     res = conn.execute(sql, params).fetchall()
-    cols = ["id", "event_date", "loai", "loai_kn", "noi_dung", "ket_qua", "product"]
+    cols = ["id", "event_date", "loai", "loai_kn", "noi_dung", "ket_qua", "product", "thai_do"]
     return [dict(zip(cols, row)) for row in res]
 
 

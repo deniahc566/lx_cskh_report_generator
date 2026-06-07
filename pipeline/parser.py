@@ -80,7 +80,7 @@ def parse_cskh_bytes(
 
     Returns list of dicts with keys:
       id, ma_phieu, source_file, format, event_date,
-      loai, loai_kn, noi_dung, ket_qua, product
+      loai, loai_kn, noi_dung, ket_qua, product, thai_do
     """
     wb = openpyxl.load_workbook(io.BytesIO(file_bytes), read_only=True, data_only=True)
     ws = wb.active
@@ -88,14 +88,17 @@ def parse_cskh_bytes(
     rows = []
 
     if is_new:
-        for r in range(2, ws.max_row + 1):
-            ma_phieu = ws.cell(r, 2).value
-            loai_raw = ws.cell(r, 8).value
-            loai_kn  = ws.cell(r, 10).value
-            noi_dung = ws.cell(r, 13).value
-            sp_raw   = ws.cell(r, 14).value
-            kq_raw   = ws.cell(r, 15).value
-            d_val    = ws.cell(r, 16).value
+        for row_tuple in ws.iter_rows(min_row=2, values_only=True):
+            if len(row_tuple) < 16:
+                continue
+            ma_phieu    = row_tuple[1]   # col 2
+            loai_raw    = row_tuple[7]   # col 8
+            loai_kn     = row_tuple[9]   # col 10
+            thai_do_raw = row_tuple[11]  # col 12
+            noi_dung    = row_tuple[12]  # col 13
+            sp_raw      = row_tuple[13]  # col 14
+            kq_raw      = row_tuple[14]  # col 15
+            d_val       = row_tuple[15]  # col 16
 
             dt = _parse_date(d_val)
             if dt is None or not loai_raw:
@@ -117,21 +120,27 @@ def parse_cskh_bytes(
                 "noi_dung":    str(noi_dung).strip() if noi_dung else "",
                 "ket_qua":     kq,
                 "product":     product,
+                "thai_do":     str(thai_do_raw).strip() if thai_do_raw else "",
             })
     else:
-        for r in range(2, ws.max_row + 1):
-            d_val    = ws.cell(r, 2).value
-            loai_raw = ws.cell(r, 3).value
-            loai_kn  = ws.cell(r, 11).value
-            noi_dung = ws.cell(r, 14).value
-            sp_raw   = ws.cell(r, 15).value
-            ket_qua  = ws.cell(r, 16).value
+        for row_idx, row_tuple in enumerate(ws.iter_rows(min_row=2, values_only=True), start=2):
+            if len(row_tuple) < 16:
+                continue
+            d_val       = row_tuple[1]   # col 2
+            loai_raw    = row_tuple[2]   # col 3
+            loai_kn     = row_tuple[10]  # col 11
+            thai_do_raw = row_tuple[12]  # col 13
+            noi_dung    = row_tuple[13]  # col 14
+            sp_raw      = row_tuple[14]  # col 15
+            ket_qua     = row_tuple[15]  # col 16
 
             dt = _parse_date(d_val)
             if dt is None or not loai_raw:
                 continue
 
-            row_vals = tuple(ws.cell(r, c).value for c in range(1, ws.max_column + 1))
+            # Include row index + first 16 cols — row index guarantees uniqueness when
+            # two rows are identical in all 16 columns (avoids PRIMARY KEY collision).
+            row_vals = (row_idx,) + row_tuple[:16]
             row_id   = _make_old_format_id(filename, row_vals)
 
             loai    = _LOAI_MAP_OLD.get(_norm(str(loai_raw).strip()), str(loai_raw).strip())
@@ -148,6 +157,7 @@ def parse_cskh_bytes(
                 "noi_dung":    str(noi_dung).strip() if noi_dung else "",
                 "ket_qua":     str(ket_qua).strip() if ket_qua else "",
                 "product":     product,
+                "thai_do":     str(thai_do_raw).strip() if thai_do_raw else "",
             })
 
     wb.close()

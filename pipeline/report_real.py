@@ -51,7 +51,11 @@ def _fmt_day(d: date) -> str:
 
 ROWS_DEF = [
     (0, "",  "Tổng Số lượng cuộc gọi",                           "total",                  True,  False, False),
-    (0, "1", "Kênh tiếp nhận",                                   None,                     True,  True,  False),
+    (0, "1", "Thái độ khách hàng",                               None,                     True,  True,  False),
+    (0, "",  "Hài lòng",                                         "thai_do_hai_long",        False, False, False),
+    (0, "",  "Bình thường",                                      "thai_do_binh_thuong",     False, False, False),
+    (0, "",  "Gay gắt",                                          "thai_do_gay_gat",         False, False, False),
+    (0, "2", "Kênh tiếp nhận",                                   None,                     True,  True,  False),
     (0, "",  "MB",                                                "mb_total",               True,  False, False),
     (0, "",  "Call",                                              "mb_call",                False, False, False),
     (0, "",  "Email",                                             "mb_email",               False, False, False),
@@ -62,7 +66,7 @@ ROWS_DEF = [
     (1, "",  "- Số cuộc gọi KH không trả lời",                   "litex_kh_ko_tl",         False, False, True),
     (0, "",  "Email",                                             "litex_email",            False, False, False),
     (0, "",  "Fanpage / mạng xã hội / website",                  "litex_fanpage",          False, False, False),
-    (0, "2", "Phân loại cuộc gọi",                               None,                     True,  True,  False),
+    (0, "3", "Phân loại cuộc gọi",                               None,                     True,  True,  False),
     (0, "",  "Khách hàng hỏi quyền lợi sản phẩm / thao tác",    "tu_van",                 False, False, False),
     (0, "",  "Khách hàng yêu cầu hủy dịch vụ",                  "huy",                    False, False, False),
     (1, "",  "- Số khách hàng hủy",                              "so_huy",                 False, False, True),
