@@ -41,8 +41,10 @@ DATE_GROUPS = [
 ]
 
 
-def _count_boi_thuong(rows: list[dict]) -> int:
-    seen, count = set(), 0
+def _count_boi_thuong(rows: list[dict], seen: set | None = None) -> int:
+    if seen is None:
+        seen = set()
+    count = 0
     for r in rows:
         if _classify(r) != "boi_thuong":
             continue
@@ -67,7 +69,7 @@ def _is_thai_do_hai_long(n: str) -> bool:
     return "hai_long" in n or "hài lòng" in n
 
 
-def calc_real(rows: list[dict]) -> dict:
+def calc_real(rows: list[dict], seen_bt: set | None = None) -> dict:
     mb    = [r for r in rows if r["loai"] in ("DVKH MB247", "Email MB")]
     litex = [r for r in rows if r["loai"] not in ("DVKH MB247", "Email MB")]
 
@@ -118,14 +120,14 @@ def calc_real(rows: list[dict]) -> dict:
             _is_ko_nghe(_norm(r["noi_dung"]), _norm(r["ket_qua"])) or
             _is_da_ho_tro(_norm(r["noi_dung"]), _norm(r["ket_qua"])) or
             _is_goi_nham(_norm(r["noi_dung"]), _norm(r["ket_qua"])))),
-        "boi_thuong":        _count_boi_thuong(rows),
+        "boi_thuong":        _count_boi_thuong(rows, seen_bt),
         "thai_do_gay_gat":   sum(1 for r in rows if _is_thai_do_gay_gat(_norm(r.get("thai_do", "")))),
         "thai_do_binh_thuong": sum(1 for r in rows if _is_thai_do_binh_thuong(_norm(r.get("thai_do", "")))),
         "thai_do_hai_long":  sum(1 for r in rows if _is_thai_do_hai_long(_norm(r.get("thai_do", "")))),
     }
 
 
-def calc_mb(rows: list[dict]) -> dict:
+def calc_mb(rows: list[dict], seen_bt: set | None = None) -> dict:
     mb    = [r for r in rows if r["loai"] in ("DVKH MB247", "Email MB")]
     litex = [r for r in rows if r["loai"] not in ("DVKH MB247", "Email MB")]
 
@@ -150,7 +152,7 @@ def calc_mb(rows: list[dict]) -> dict:
         "so_tiep_tuc":   so_tt,
         "so_chua_kq":    so_chua_kq,
         "khac":          sum(1 for r in rows if _classify(r) == "khac"),
-        "boi_thuong":    _count_boi_thuong(rows),
+        "boi_thuong":    _count_boi_thuong(rows, seen_bt),
         "thai_do_gay_gat":    sum(1 for r in rows if _is_thai_do_gay_gat(_norm(r.get("thai_do", "")))),
         "thai_do_binh_thuong": sum(1 for r in rows if _is_thai_do_binh_thuong(_norm(r.get("thai_do", "")))),
         "thai_do_hai_long":   sum(1 for r in rows if _is_thai_do_hai_long(_norm(r.get("thai_do", "")))),

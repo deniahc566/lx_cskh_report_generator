@@ -4,6 +4,7 @@ from __future__ import annotations
 import http.cookiejar
 import json
 import time
+import urllib.error
 import urllib.request
 from datetime import date, datetime, timezone, timedelta
 from typing import Callable
@@ -77,6 +78,12 @@ def fetch_kh_active(
         value = int(data["total_created"])
         cache_saver(product_name, value)
         return value
+    except urllib.error.HTTPError as exc:
+        body = exc.read().decode(errors="replace")[:500]
+        cached = cache_loader().get(product_name)
+        if cached is not None:
+            return cached
+        raise RuntimeError(f"Orders API HTTP {exc.code}: {body}") from exc
     except Exception as exc:
         cached = cache_loader().get(product_name)
         if cached is not None:

@@ -110,7 +110,8 @@ def _populate_sheet_mb(ws, data: list[dict], kh_active: int, product_name: str =
     for r in data:
         by_date[_get_date(r)].append(r)
 
-    metrics_by_date = {d: calc_mb(by_date[d]) for d in dates}
+    seen_bt: set = set()
+    metrics_by_date = {d: calc_mb(by_date[d], seen_bt) for d in dates}
     if product_name == "Mất Tiền MB Đền":
         metrics_by_date.update(HARDCODED_METRICS_MB)
         all_dates = sorted(set(dates) | set(HARDCODED_METRICS_MB))
