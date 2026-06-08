@@ -2,11 +2,11 @@
 from pipeline.classify import _norm, _has_huy, _is_ko_nghe, _is_da_ho_tro, _is_goi_nham, _is_that_bai
 
 
-def _classify_raw(loai_kn: str, noi_dung: str, ket_qua: str) -> str:
+def _classify_raw(loai_kn: str, noi_dung: str, ket_qua: str, loai: str = "") -> str:
     lkn = _norm(loai_kn)
     nd  = _norm(noi_dung)
     kq  = _norm(ket_qua)
-    if "bồi thường" in nd or "bồi thường" in lkn:
+    if "bồi thường" in lkn or (_norm(loai) == "email mb" and "bồi thường" in nd):
         return "boi_thuong"
     if _has_huy(lkn) or _has_huy(nd) or _has_huy(kq):
         return "huy"
@@ -17,8 +17,8 @@ def _classify_raw(loai_kn: str, noi_dung: str, ket_qua: str) -> str:
     return "khac"
 
 
-def _should_reclassify(loai_kn: str, noi_dung: str, ket_qua: str) -> bool:
-    if _classify_raw(loai_kn, noi_dung, ket_qua) != "khac":
+def _should_reclassify(loai_kn: str, noi_dung: str, ket_qua: str, loai: str = "") -> bool:
+    if _classify_raw(loai_kn, noi_dung, ket_qua, loai) != "khac":
         return False
     nd = _norm(noi_dung)
     kq = _norm(ket_qua)
@@ -43,7 +43,7 @@ def apply_mb_reclassification(rows: list[dict]) -> list[dict]:
         kq  = r2.get("ket_qua", "")
         loai = r2.get("loai", "")
 
-        if _should_reclassify(lkn, nd, kq):
+        if _should_reclassify(lkn, nd, kq, loai):
             r2["loai_kn"] = "Tư vấn/thao tác"
             lkn = "Tư vấn/thao tác"
 

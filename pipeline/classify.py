@@ -56,7 +56,8 @@ def _classify(row: dict) -> str:
     nd  = _norm(row["noi_dung"])
     kq  = _norm(row["ket_qua"])
 
-    if "bồi thường" in nd or "bồi thường" in lkn:
+    is_email_mb = _norm(row.get("loai", "")) == "email mb"
+    if "bồi thường" in lkn or (is_email_mb and "bồi thường" in nd):
         return "boi_thuong"
     if _has_huy(lkn) or _has_huy(nd) or _has_huy(kq):
         return "huy"
