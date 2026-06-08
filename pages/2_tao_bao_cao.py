@@ -40,7 +40,7 @@ with col2:
 # ── Report type ────────────────────────────────────────────────────────────────
 report_type = st.radio(
     "Loại báo cáo",
-    ["Báo cáo thật", "Báo cáo MB (reclassified)", "Cả hai"],
+    ["Báo cáo LiteX", "Báo cáo MB (reclassified)", "Cả hai"],
     horizontal=True,
 )
 
@@ -115,7 +115,7 @@ if st.button("Tạo báo cáo", type="primary"):
         report_bytes_real = None
         report_bytes_mb   = None
 
-        if report_type in ("Báo cáo thật", "Cả hai"):
+        if report_type in ("Báo cáo LiteX", "Cả hai"):
             st.write("Đang tạo báo cáo thật...")
             report_bytes_real = build_report_real(products, kh_active_by_product)
 
