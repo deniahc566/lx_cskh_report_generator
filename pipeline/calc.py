@@ -41,6 +41,20 @@ DATE_GROUPS = [
 ]
 
 
+def _count_boi_thuong(rows: list[dict]) -> int:
+    seen, count = set(), 0
+    for r in rows:
+        if _classify(r) != "boi_thuong":
+            continue
+        name = _norm(r.get("ten_kh", "")).strip()
+        if name:
+            if name in seen:
+                continue
+            seen.add(name)
+        count += 1
+    return count
+
+
 def _is_thai_do_gay_gat(n: str) -> bool:
     return "gay_gat" in n or "gây gắt" in n or "không hài lòng" in n or "khong hai long" in n
 
@@ -104,7 +118,7 @@ def calc_real(rows: list[dict]) -> dict:
             _is_ko_nghe(_norm(r["noi_dung"]), _norm(r["ket_qua"])) or
             _is_da_ho_tro(_norm(r["noi_dung"]), _norm(r["ket_qua"])) or
             _is_goi_nham(_norm(r["noi_dung"]), _norm(r["ket_qua"])))),
-        "boi_thuong":        sum(1 for r in rows if _classify(r) == "boi_thuong"),
+        "boi_thuong":        _count_boi_thuong(rows),
         "thai_do_gay_gat":   sum(1 for r in rows if _is_thai_do_gay_gat(_norm(r.get("thai_do", "")))),
         "thai_do_binh_thuong": sum(1 for r in rows if _is_thai_do_binh_thuong(_norm(r.get("thai_do", "")))),
         "thai_do_hai_long":  sum(1 for r in rows if _is_thai_do_hai_long(_norm(r.get("thai_do", "")))),
@@ -136,7 +150,7 @@ def calc_mb(rows: list[dict]) -> dict:
         "so_tiep_tuc":   so_tt,
         "so_chua_kq":    so_chua_kq,
         "khac":          sum(1 for r in rows if _classify(r) == "khac"),
-        "boi_thuong":    sum(1 for r in rows if _classify(r) == "boi_thuong"),
+        "boi_thuong":    _count_boi_thuong(rows),
         "thai_do_gay_gat":    sum(1 for r in rows if _is_thai_do_gay_gat(_norm(r.get("thai_do", "")))),
         "thai_do_binh_thuong": sum(1 for r in rows if _is_thai_do_binh_thuong(_norm(r.get("thai_do", "")))),
         "thai_do_hai_long":   sum(1 for r in rows if _is_thai_do_hai_long(_norm(r.get("thai_do", "")))),

@@ -25,8 +25,10 @@ def upsert_cskh_rows(rows: list[dict]) -> int:
     df["uploaded_at"] = datetime.utcnow()
     if "thai_do" not in df.columns:
         df["thai_do"] = ""
+    if "ten_kh" not in df.columns:
+        df["ten_kh"] = ""
     df = df[["id", "ma_phieu", "source_file", "format", "event_date",
-             "loai", "loai_kn", "noi_dung", "ket_qua", "product", "uploaded_at", "thai_do"]]
+             "loai", "loai_kn", "noi_dung", "ket_qua", "product", "uploaded_at", "thai_do", "ten_kh"]]
     df = df.drop_duplicates(subset=["id"], keep="last")
     conn.execute("DELETE FROM cskh_raw WHERE source_file = ?", [source_file])
     conn.register("_tmp_cskh", df)
@@ -64,13 +66,14 @@ def fetch_cskh_rows(
     where, params = _date_filter(date_from, date_to, col="event_date")
     sql = f"""
         SELECT id, event_date, loai, loai_kn, noi_dung, ket_qua, product,
-               COALESCE(thai_do, '') AS thai_do
+               COALESCE(thai_do, '') AS thai_do,
+               COALESCE(ten_kh, '') AS ten_kh
         FROM cskh_raw
         {where}
         ORDER BY event_date
     """
     res = conn.execute(sql, params).fetchall()
-    cols = ["id", "event_date", "loai", "loai_kn", "noi_dung", "ket_qua", "product", "thai_do"]
+    cols = ["id", "event_date", "loai", "loai_kn", "noi_dung", "ket_qua", "product", "thai_do", "ten_kh"]
     return [dict(zip(cols, row)) for row in res]
 
 

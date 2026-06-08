@@ -36,6 +36,9 @@ _KQMAP_NEW = {
     "kq_hoan_thanh_khac":     "Hoàn thành tư vấn",
 }
 
+# Values that mean "no real name provided"
+_EMPTY_NAME = {"kh", "khách hàng", "kh.", "n/a", "none", ""}
+
 
 def _parse_date(val) -> "datetime.date | None":
     if val is None:
@@ -66,6 +69,13 @@ def _get_product(raw: str, product_normalize: dict) -> str:
     return next(iter(product_normalize.values()), "Khác")
 
 
+def _clean_ten_kh(raw) -> str:
+    if not raw:
+        return ""
+    s = _norm(str(raw).strip())
+    return "" if s in _EMPTY_NAME else str(raw).strip()
+
+
 def _is_new_format(ws) -> bool:
     h = ws.cell(1, 3).value or ""
     return "loại cuộc gọi" not in _norm(str(h))
@@ -80,7 +90,7 @@ def parse_cskh_bytes(
 
     Returns list of dicts with keys:
       id, ma_phieu, source_file, format, event_date,
-      loai, loai_kn, noi_dung, ket_qua, product, thai_do
+      loai, loai_kn, noi_dung, ket_qua, product, thai_do, ten_kh
     """
     wb = openpyxl.load_workbook(io.BytesIO(file_bytes), read_only=True, data_only=True)
     ws = wb.active
@@ -92,6 +102,7 @@ def parse_cskh_bytes(
             if len(row_tuple) < 16:
                 continue
             ma_phieu    = row_tuple[1]   # col 2
+            ten_kh_raw  = row_tuple[2]   # col 3
             loai_raw    = row_tuple[7]   # col 8
             loai_kn     = row_tuple[9]   # col 10
             thai_do_raw = row_tuple[11]  # col 12
@@ -110,7 +121,7 @@ def parse_cskh_bytes(
             product = _get_product(str(sp_raw).strip() if sp_raw else "", product_normalize)
 
             rows.append({
-                "id":          str(ma_phieu) if ma_phieu is not None else _make_old_format_id(filename, (r,)),
+                "id":          str(ma_phieu) if ma_phieu is not None else _make_old_format_id(filename, (row_tuple,)),
                 "ma_phieu":    str(ma_phieu) if ma_phieu is not None else None,
                 "source_file": filename,
                 "format":      "new",
@@ -121,6 +132,7 @@ def parse_cskh_bytes(
                 "ket_qua":     kq,
                 "product":     product,
                 "thai_do":     str(thai_do_raw).strip() if thai_do_raw else "",
+                "ten_kh":      _clean_ten_kh(ten_kh_raw),
             })
     else:
         for row_idx, row_tuple in enumerate(ws.iter_rows(min_row=2, values_only=True), start=2):
@@ -128,6 +140,7 @@ def parse_cskh_bytes(
                 continue
             d_val       = row_tuple[1]   # col 2
             loai_raw    = row_tuple[2]   # col 3
+            ten_kh_raw  = row_tuple[4]   # col 5
             loai_kn     = row_tuple[10]  # col 11
             thai_do_raw = row_tuple[12]  # col 13
             noi_dung    = row_tuple[13]  # col 14
@@ -158,6 +171,7 @@ def parse_cskh_bytes(
                 "ket_qua":     str(ket_qua).strip() if ket_qua else "",
                 "product":     product,
                 "thai_do":     str(thai_do_raw).strip() if thai_do_raw else "",
+                "ten_kh":      _clean_ten_kh(ten_kh_raw),
             })
 
     wb.close()
