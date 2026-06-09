@@ -204,12 +204,6 @@ def parse_mb_email_bytes(
         if dt is None:
             continue
 
-        # MB_Email date columns are sometimes swapped (day/month)
-        try:
-            dt = dt.replace(month=dt.day, day=dt.month)
-        except ValueError:
-            pass
-
         product = detect_email_product(str(content) if content else "", product_keywords)
 
         rows.append({
