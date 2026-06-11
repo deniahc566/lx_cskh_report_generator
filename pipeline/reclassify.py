@@ -1,13 +1,20 @@
 """In-memory reclassification (replaces create_mb_data.py disk I/O)."""
-from pipeline.classify import _norm, _has_huy, _is_ko_nghe, _is_da_ho_tro, _is_goi_nham, _is_that_bai
+from pipeline.classify import _norm, _has_huy, _is_ko_nghe, _is_da_ho_tro, _is_goi_nham, _is_that_bai, _LOI_THU_PHI_EMAIL_KW
 
 
 def _classify_raw(loai_kn: str, noi_dung: str, ket_qua: str, loai: str = "") -> str:
     lkn = _norm(loai_kn)
     nd  = _norm(noi_dung)
     kq  = _norm(ket_qua)
-    if "bồi thường" in lkn or (_norm(loai) == "email mb" and "bồi thường" in nd):
+    is_email_mb = _norm(loai) == "email mb"
+    is_litex = not is_email_mb and _norm(loai) != "dvkh mb247"
+
+    if "bồi thường" in lkn or (is_email_mb and "bồi thường" in nd):
         return "boi_thuong"
+    if (is_litex and "loi_thu_phi" in lkn) or (
+        is_email_mb and any(kw in nd for kw in _LOI_THU_PHI_EMAIL_KW)
+    ):
+        return "loi_thu_phi"
     if _has_huy(lkn) or _has_huy(nd) or _has_huy(kq):
         return "huy"
     if ("tư vấn" in lkn or "tìm hiểu" in lkn

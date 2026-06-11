@@ -91,6 +91,7 @@ ROWS_DEF = [
     (1, "",  "- Không có kết quả (KH mất kết nối, ngắt máy, không cần hỗ trợ nữa)", "so_chua_kq", False, False, True,  ""),
     (0, "",  "Số khách hàng có khiếu nại khác",                                      "khac",        False, False, False, ""),
     (0, "",  "Khách hàng yêu cầu bồi thường",                                       "boi_thuong",  False, False, False, ""),
+    (0, "",  "Khách hàng khiếu nại lỗi thu phí",                                   "loi_thu_phi", False, False, False, ""),
 ]
 
 

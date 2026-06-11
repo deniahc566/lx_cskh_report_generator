@@ -85,20 +85,20 @@ def fetch_mb_email_rows(
     conn = get_conn()
     where, params = _date_filter(date_from, date_to, col="event_date")
     sql = f"""
-        SELECT ticket_id, event_date, product
+        SELECT ticket_id, event_date, product, COALESCE(content, '') AS content
         FROM mb_email_raw
         {where}
         ORDER BY event_date
     """
     res = conn.execute(sql, params).fetchall()
     rows = []
-    for ticket_id, event_date, product in res:
+    for ticket_id, event_date, product, content in res:
         rows.append({
             "id":         f"mb_email_{ticket_id}",
             "event_date": event_date,
             "loai":       "Email MB",
             "loai_kn":    "hủy",
-            "noi_dung":   "",
+            "noi_dung":   content,
             "ket_qua":    "Yêu cầu hủy",
             "product":    product,
         })

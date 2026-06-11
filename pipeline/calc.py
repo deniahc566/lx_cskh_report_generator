@@ -121,6 +121,7 @@ def calc_real(rows: list[dict], seen_bt: set | None = None) -> dict:
             _is_da_ho_tro(_norm(r["noi_dung"]), _norm(r["ket_qua"])) or
             _is_goi_nham(_norm(r["noi_dung"]), _norm(r["ket_qua"])))),
         "boi_thuong":        _count_boi_thuong(rows, seen_bt),
+        "loi_thu_phi":       sum(1 for r in rows if _classify(r) == "loi_thu_phi"),
         "thai_do_gay_gat":   sum(1 for r in rows if _is_thai_do_gay_gat(_norm(r.get("thai_do", "")))),
         "thai_do_binh_thuong": sum(1 for r in rows if _is_thai_do_binh_thuong(_norm(r.get("thai_do", "")))),
         "thai_do_hai_long":  sum(1 for r in rows if _is_thai_do_hai_long(_norm(r.get("thai_do", "")))),
@@ -153,6 +154,7 @@ def calc_mb(rows: list[dict], seen_bt: set | None = None) -> dict:
         "so_chua_kq":    so_chua_kq,
         "khac":          sum(1 for r in rows if _classify(r) == "khac"),
         "boi_thuong":    _count_boi_thuong(rows, seen_bt),
+        "loi_thu_phi":   sum(1 for r in rows if _classify(r) == "loi_thu_phi"),
         "thai_do_gay_gat":    sum(1 for r in rows if _is_thai_do_gay_gat(_norm(r.get("thai_do", "")))),
         "thai_do_binh_thuong": sum(1 for r in rows if _is_thai_do_binh_thuong(_norm(r.get("thai_do", "")))),
         "thai_do_hai_long":   sum(1 for r in rows if _is_thai_do_hai_long(_norm(r.get("thai_do", "")))),

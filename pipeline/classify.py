@@ -23,6 +23,11 @@ _THAT_BAI_KW = _KO_NGHE_KW | frozenset([
     "hỗ trợ", "không cần", "không còn nhu cầu", "đã được giải đáp",
 ])
 
+_LOI_THU_PHI_EMAIL_KW = frozenset([
+    "lỗi thu phí", "loi thu phi", "thu phí sai", "thu phí lỗi",
+    "trừ phí sai", "trừ tiền sai", "lỗi phí",
+])
+
 
 def _has_huy(text: str) -> bool:
     return any(kw in text for kw in _HUY_KW)
@@ -57,8 +62,16 @@ def _classify(row: dict) -> str:
     kq  = _norm(row["ket_qua"])
 
     is_email_mb = _norm(row.get("loai", "")) == "email mb"
+    is_litex = not is_email_mb and _norm(row.get("loai", "")) != "dvkh mb247"
+
     if "bồi thường" in lkn or (is_email_mb and "bồi thường" in nd):
         return "boi_thuong"
+
+    if (is_litex and "loi_thu_phi" in lkn) or (
+        is_email_mb and any(kw in nd for kw in _LOI_THU_PHI_EMAIL_KW)
+    ):
+        return "loi_thu_phi"
+
     if _has_huy(lkn) or _has_huy(nd) or _has_huy(kq):
         return "huy"
     if ("tư vấn" in lkn or "tìm hiểu" in lkn
