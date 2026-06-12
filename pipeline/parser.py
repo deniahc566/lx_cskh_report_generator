@@ -192,10 +192,12 @@ def parse_mb_email_bytes(
     ws = wb.active
     rows = []
 
-    for r in range(2, ws.max_row + 1):
-        d_val     = ws.cell(r, 10).value
-        ticket_id = ws.cell(r, 1).value
-        content   = ws.cell(r, 19).value
+    for row_tuple in ws.iter_rows(min_row=2, values_only=True):
+        if len(row_tuple) < 19:
+            continue
+        ticket_id = row_tuple[0]   # col 1
+        d_val     = row_tuple[9]   # col 10
+        content   = row_tuple[18]  # col 19
 
         if not d_val or not ticket_id:
             continue
