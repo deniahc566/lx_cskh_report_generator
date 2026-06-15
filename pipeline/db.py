@@ -45,9 +45,10 @@ def upsert_mb_email_rows(rows: list[dict]) -> int:
     df = pd.DataFrame(rows)
     df["uploaded_at"] = datetime.utcnow()
     df = df[["ticket_id", "source_file", "event_date", "content", "product", "uploaded_at"]]
+    df = df.drop_duplicates(subset=["ticket_id"], keep="last")
     conn.execute("DELETE FROM mb_email_raw WHERE source_file = ?", [source_file])
     conn.register("_tmp_email", df)
-    conn.execute("INSERT INTO mb_email_raw SELECT * FROM _tmp_email")
+    conn.execute("INSERT OR IGNORE INTO mb_email_raw SELECT * FROM _tmp_email")
     conn.unregister("_tmp_email")
     return len(df)
 
