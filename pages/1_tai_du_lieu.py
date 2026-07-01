@@ -9,7 +9,7 @@ st.title("Tải dữ liệu lên MotherDuck")
 # ── Default product normalize map (editable) ──────────────────────────────────
 _DEFAULT_NORMALIZE = """mat_tien_mb: Mất Tiền MB Đền
 roi_vo_vds: Rơi Vỡ VDS
-hong_man_hinh_mb: Hỏng màn hình MB sửa"""
+BH_MHDT_MBB: Hỏng màn hình MB sửa"""
 
 _DEFAULT_EMAIL_KEYWORDS = """mất tiền mb đền: Mất Tiền MB Đền
 rơi vỡ vds: Rơi Vỡ VDS"""
