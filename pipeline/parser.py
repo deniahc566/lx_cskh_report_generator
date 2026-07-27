@@ -46,13 +46,20 @@ def _parse_date(val) -> "datetime.date | None":
     if hasattr(val, "date"):
         return val.date()
     if isinstance(val, str):
-        s = val.strip()
+        s = val.strip().lstrip("'")   # strip Excel text-prefix apostrophe
         for fmt in ("%d/%m/%Y %H:%M:%S", "%d/%m/%Y %H:%M", "%d/%m/%Y"):
             try:
                 return datetime.strptime(s, fmt).date()
             except ValueError:
                 continue
     return None
+
+
+def _sv(v) -> str:
+    """Return cell value as string, stripping Excel text-prefix apostrophe."""
+    if v is None:
+        return ""
+    return str(v).strip().lstrip("'")
 
 
 def _make_old_format_id(filename: str, row_vals: tuple) -> str:
@@ -76,9 +83,14 @@ def _clean_ten_kh(raw) -> str:
     return "" if s in _EMPTY_NAME else str(raw).strip()
 
 
-def _is_new_format(ws) -> bool:
-    h = ws.cell(1, 3).value or ""
-    return "loại cuộc gọi" not in _norm(str(h))
+def _detect_format(ws) -> str:
+    """Return 'old', 'new', or 'new_v2' based on column-3 header."""
+    h = _norm(str(ws.cell(1, 3).value or ""))
+    if "loại cuộc gọi" in h:
+        return "old"
+    if "đầu số" in h:
+        return "new_v2"   # 21-col layout: extra Đầu số + Số hợp đồng + Thời gian hẹn
+    return "new"
 
 
 def parse_cskh_bytes(
@@ -94,45 +106,58 @@ def parse_cskh_bytes(
     """
     wb = openpyxl.load_workbook(io.BytesIO(file_bytes), read_only=True, data_only=True)
     ws = wb.active
-    is_new = _is_new_format(ws)
+    fmt = _detect_format(ws)
     rows = []
 
-    if is_new:
+    if fmt in ("new", "new_v2"):
+        # new:    16-col layout — col indices as originally defined
+        # new_v2: 21-col layout — extra Đầu số (col3), Số hợp đồng (col10),
+        #         Thời gian hẹn gọi lại (col12); date shifts to col17
+        if fmt == "new_v2":
+            _IDX = dict(ma=1, ten_kh=3, loai=8, loai_kn=10,
+                        thai_do=12, noi_dung=13, sp=14, kq=15, date=16)
+            _MIN_COLS = 17
+        else:
+            _IDX = dict(ma=1, ten_kh=2, loai=7, loai_kn=9,
+                        thai_do=11, noi_dung=12, sp=13, kq=14, date=15)
+            _MIN_COLS = 16
+
         for row_tuple in ws.iter_rows(min_row=2, values_only=True):
-            if len(row_tuple) < 16:
+            if len(row_tuple) < _MIN_COLS:
                 continue
-            ma_phieu    = row_tuple[1]   # col 2
-            ten_kh_raw  = row_tuple[2]   # col 3
-            loai_raw    = row_tuple[7]   # col 8
-            loai_kn     = row_tuple[9]   # col 10
-            thai_do_raw = row_tuple[11]  # col 12
-            noi_dung    = row_tuple[12]  # col 13
-            sp_raw      = row_tuple[13]  # col 14
-            kq_raw      = row_tuple[14]  # col 15
-            d_val       = row_tuple[15]  # col 16
+            ma_phieu    = row_tuple[_IDX["ma"]]
+            ten_kh_raw  = row_tuple[_IDX["ten_kh"]]
+            loai_raw    = row_tuple[_IDX["loai"]]
+            loai_kn     = row_tuple[_IDX["loai_kn"]]
+            thai_do_raw = row_tuple[_IDX["thai_do"]]
+            noi_dung    = row_tuple[_IDX["noi_dung"]]
+            sp_raw      = row_tuple[_IDX["sp"]]
+            kq_raw      = row_tuple[_IDX["kq"]]
+            d_val       = row_tuple[_IDX["date"]]
 
             dt = _parse_date(d_val)
             if dt is None or not loai_raw:
                 continue
 
-            loai    = _LOAI_MAP_NEW.get(_norm(str(loai_raw).strip()), str(loai_raw).strip())
-            kq_key  = str(kq_raw).strip() if kq_raw else ""
+            loai    = _LOAI_MAP_NEW.get(_norm(_sv(loai_raw)), _sv(loai_raw))
+            kq_key  = _sv(kq_raw)
             kq      = _KQMAP_NEW.get(kq_key, kq_key)
-            product = _get_product(str(sp_raw).strip() if sp_raw else "", product_normalize)
+            product = _get_product(_sv(sp_raw), product_normalize)
+            ma_str  = _sv(ma_phieu) if ma_phieu is not None else None
 
             rows.append({
-                "id":          str(ma_phieu) if ma_phieu is not None else _make_old_format_id(filename, (row_tuple,)),
-                "ma_phieu":    str(ma_phieu) if ma_phieu is not None else None,
+                "id":          ma_str or _make_old_format_id(filename, (row_tuple,)),
+                "ma_phieu":    ma_str,
                 "source_file": filename,
-                "format":      "new",
+                "format":      fmt,
                 "event_date":  dt,
                 "loai":        loai,
-                "loai_kn":     str(loai_kn).strip() if loai_kn else "",
-                "noi_dung":    str(noi_dung).strip() if noi_dung else "",
+                "loai_kn":     _sv(loai_kn),
+                "noi_dung":    _sv(noi_dung),
                 "ket_qua":     kq,
                 "product":     product,
-                "thai_do":     str(thai_do_raw).strip() if thai_do_raw else "",
-                "ten_kh":      _clean_ten_kh(ten_kh_raw),
+                "thai_do":     _sv(thai_do_raw),
+                "ten_kh":      _clean_ten_kh(_sv(ten_kh_raw) or ten_kh_raw),
             })
     else:
         for row_idx, row_tuple in enumerate(ws.iter_rows(min_row=2, values_only=True), start=2):
