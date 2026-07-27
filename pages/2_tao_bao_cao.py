@@ -19,9 +19,10 @@ from pipeline.report_mb import build_report_mb
 from pipeline.report_real import build_report_real
 
 PRODUCT_API_FILTERS: dict[str, dict] = {
-    "Mất Tiền MB Đền":       {"sub_order_types": [3], "partner_codes": ["MB"]},
-    "Rơi Vỡ VDS":            {"sub_order_types": [4], "partner_codes": ["VDS"]},
-    "Hỏng màn hình MB sửa": {"sub_order_types": [4], "partner_codes": ["MB"]},
+    "Mất Tiền MB Đền":                        {"sub_order_types": [3], "partner_codes": ["MB"]},
+    "Rơi Vỡ VDS":                             {"sub_order_types": [4], "partner_codes": ["VDS"]},
+    "Hỏng màn hình MB sửa":                  {"sub_order_types": [4], "partner_codes": ["MB"]},
+    "Bệnh lý nghiêm trọng MB đồng hành":     {"sub_order_types": [6], "partner_codes": ["MB"]},
 }
 
 st.title("Tạo báo cáo CSKH")
