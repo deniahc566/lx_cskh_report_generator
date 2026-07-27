@@ -13,13 +13,15 @@ sys.path.insert(0, os.path.dirname(__file__))
 from pipeline.parser import parse_cskh_bytes, parse_mb_email_bytes
 
 PRODUCT_NORMALIZE = {
-    "mat_tien_mb":        "Mất Tiền MB Đền",
-    "roi_vo_vds":         "Rơi Vỡ VDS",
-    "BH_MHDT_MBB":        "Hỏng màn hình MB sửa",
+    "mat_tien_mb":             "Mất Tiền MB Đền",
+    "roi_vo_vds":              "Rơi Vỡ VDS",
+    "BH_MHDT_MBB":             "Hỏng màn hình MB sửa",
+    "benh_ly_nghiem_trong_mbdh": "Bệnh lý nghiêm trọng MB đồng hành",
     # canonical names pass-through
-    "Mất Tiền MB Đền":    "Mất Tiền MB Đền",
-    "Rơi Vỡ VDS":         "Rơi Vỡ VDS",
-    "Hỏng màn hình MB sửa": "Hỏng màn hình MB sửa",
+    "Mất Tiền MB Đền":         "Mất Tiền MB Đền",
+    "Rơi Vỡ VDS":              "Rơi Vỡ VDS",
+    "Hỏng màn hình MB sửa":    "Hỏng màn hình MB sửa",
+    "Bệnh lý nghiêm trọng MB đồng hành": "Bệnh lý nghiêm trọng MB đồng hành",
 }
 
 PRODUCT_KEYWORDS = [

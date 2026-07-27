@@ -32,10 +32,11 @@ _CSKH_DIR     = r"D:\LiteX\MB\Data\CSKH"
 _MB_EMAIL_DIR = r"D:\LiteX\MB\Data\MB_Email"
 
 _PRODUCT_NORMALIZE = {
-    "mat_tien_mb":      "Mất Tiền MB Đền",
-    "roi_vo_vds":       "Rơi Vỡ VDS",
-    "BH_MHDT_MBB":      "Hỏng màn hình MB sửa",
-    "hong_man_hinh_mb": "Hỏng màn hình MB sửa",
+    "mat_tien_mb":               "Mất Tiền MB Đền",
+    "roi_vo_vds":                "Rơi Vỡ VDS",
+    "BH_MHDT_MBB":               "Hỏng màn hình MB sửa",
+    "hong_man_hinh_mb":          "Hỏng màn hình MB sửa",
+    "benh_ly_nghiem_trong_mbdh": "Bệnh lý nghiêm trọng MB đồng hành",
 }
 
 _EMAIL_KEYWORDS = [
