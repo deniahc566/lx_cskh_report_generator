@@ -72,11 +72,13 @@ def _classify(row: dict) -> str:
     ):
         return "loi_thu_phi"
 
-    if _has_huy(lkn) or _has_huy(nd) or _has_huy(kq):
+    # When loai_kn is explicitly set by the operator, respect it as the
+    # primary signal. Only fall back to noi_dung/ket_qua when loai_kn is
+    # empty (operator left it blank).
+    if _has_huy(lkn) or (not lkn and (_has_huy(nd) or _has_huy(kq))):
         return "huy"
     if ("tư vấn" in lkn or "tìm hiểu" in lkn
-            or "tư vấn" in kq or "tư vấn" in nd
-            or "xác nhận" in nd):
+            or (not lkn and ("tư vấn" in kq or "tư vấn" in nd or "xác nhận" in nd))):
         return "tu_van"
     return "khac"
 
