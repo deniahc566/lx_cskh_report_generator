@@ -37,6 +37,7 @@ _PRODUCT_NORMALIZE = {
     "BH_MHDT_MBB":               "Hỏng màn hình MB sửa",
     "hong_man_hinh_mb":          "Hỏng màn hình MB sửa",
     "benh_ly_nghiem_trong_mbdh": "Bệnh lý nghiêm trọng MB đồng hành",
+    "an_ninh_mang_bidv":         "Bảo An Tài Khoản BIDV",
 }
 
 _EMAIL_KEYWORDS = [

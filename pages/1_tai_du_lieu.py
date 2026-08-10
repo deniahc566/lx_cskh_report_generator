@@ -10,7 +10,8 @@ st.title("Tải dữ liệu lên MotherDuck")
 _DEFAULT_NORMALIZE = """mat_tien_mb: Mất Tiền MB Đền
 roi_vo_vds: Rơi Vỡ VDS
 BH_MHDT_MBB: Hỏng màn hình MB sửa
-benh_ly_nghiem_trong_mbdh: Bệnh lý nghiêm trọng MB đồng hành"""
+benh_ly_nghiem_trong_mbdh: Bệnh lý nghiêm trọng MB đồng hành
+an_ninh_mang_bidv: Bảo An Tài Khoản BIDV"""
 
 _DEFAULT_EMAIL_KEYWORDS = """mất tiền mb đền: Mất Tiền MB Đền
 rơi vỡ vds: Rơi Vỡ VDS"""

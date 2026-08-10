@@ -17,11 +17,13 @@ PRODUCT_NORMALIZE = {
     "roi_vo_vds":              "Rơi Vỡ VDS",
     "BH_MHDT_MBB":             "Hỏng màn hình MB sửa",
     "benh_ly_nghiem_trong_mbdh": "Bệnh lý nghiêm trọng MB đồng hành",
+    "an_ninh_mang_bidv":         "Bảo An Tài Khoản BIDV",
     # canonical names pass-through
     "Mất Tiền MB Đền":         "Mất Tiền MB Đền",
     "Rơi Vỡ VDS":              "Rơi Vỡ VDS",
     "Hỏng màn hình MB sửa":    "Hỏng màn hình MB sửa",
     "Bệnh lý nghiêm trọng MB đồng hành": "Bệnh lý nghiêm trọng MB đồng hành",
+    "Bảo An Tài Khoản BIDV":   "Bảo An Tài Khoản BIDV",
 }
 
 PRODUCT_KEYWORDS = [
