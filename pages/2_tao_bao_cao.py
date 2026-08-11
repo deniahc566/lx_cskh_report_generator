@@ -42,7 +42,7 @@ with col2:
 # ── Report type ────────────────────────────────────────────────────────────────
 report_type = st.radio(
     "Loại báo cáo",
-    ["Báo cáo LiteX", "Báo cáo MB (reclassified)", "Cả hai"],
+    ["Báo cáo LiteX", "Báo cáo cho Đối tác", "Cả hai"],
     horizontal=True,
 )
 
@@ -118,11 +118,11 @@ if st.button("Tạo báo cáo", type="primary"):
         report_bytes_mb   = None
 
         if report_type in ("Báo cáo LiteX", "Cả hai"):
-            st.write("Đang tạo báo cáo thật...")
+            st.write("Đang tạo Báo cáo LiteX...")
             report_bytes_real = build_report_real(products, kh_active_by_product)
 
-        if report_type in ("Báo cáo MB (reclassified)", "Cả hai"):
-            st.write("Đang reclassify và tạo báo cáo MB...")
+        if report_type in ("Báo cáo cho Đối tác", "Cả hai"):
+            st.write("Đang tạo Báo cáo cho Đối tác...")
             mb_products: dict[str, list] = {}
             for pname, rows in products.items():
                 mb_products[pname] = apply_mb_reclassification(rows)
@@ -139,7 +139,7 @@ if st.button("Tạo báo cáo", type="primary"):
         buf = io.BytesIO()
         with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zf:
             zf.writestr(f"BC_CSKH_{d0}_{d1}.xlsx", report_bytes_real)
-            zf.writestr(f"BC_CSKH_mb_{d0}_{d1}.xlsx", report_bytes_mb)
+            zf.writestr(f"BC_CSKH_doitac_{d0}_{d1}.xlsx", report_bytes_mb)
         st.download_button(
             label="Tải cả hai báo cáo (.zip)",
             data=buf.getvalue(),
@@ -148,15 +148,15 @@ if st.button("Tạo báo cáo", type="primary"):
         )
     elif report_bytes_real:
         st.download_button(
-            label="Tải Báo cáo Thật (.xlsx)",
+            label="Tải Báo cáo LiteX (.xlsx)",
             data=report_bytes_real,
             file_name=f"BC_CSKH_{d0}_{d1}.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         )
     elif report_bytes_mb:
         st.download_button(
-            label="Tải Báo cáo MB (.xlsx)",
+            label="Tải Báo cáo cho Đối tác (.xlsx)",
             data=report_bytes_mb,
-            file_name=f"BC_CSKH_mb_{d0}_{d1}.xlsx",
+            file_name=f"BC_CSKH_doitac_{d0}_{d1}.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         )
