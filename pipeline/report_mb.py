@@ -75,7 +75,7 @@ ROWS_DEF = [
     (0, "",  "Bình thường",                                                         "thai_do_binh_thuong", False, False, False, ""),
     (0, "",  "Gay gắt",                                                             "thai_do_gay_gat",     False, False, False, ""),
     (0, "2", "Kênh tiếp nhận",                                                       None,          True,  True,  False, ""),
-    (0, "",  "MB",                                                                    "mb_total",    True,  False, False, ""),
+    (0, "",  "Kênh bán",                                                                "mb_total",    True,  False, False, ""),
     (0, "",  "Call",                                                                  "mb_call",     False, False, False, ""),
     (0, "",  "Email",                                                                 "mb_email",    False, False, False, ""),
     (0, "",  "Fanpage / mạng xã hội / website",                                      "mb_fanpage",  False, False, False, ""),
