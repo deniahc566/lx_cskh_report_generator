@@ -119,11 +119,9 @@ def _populate_sheet_real(ws, data: list[dict], kh_active: int, product_name: str
         ws.column_dimensions[get_column_letter(i + 3)].width = 14
     luy_ke_col = len(columns) + 3
     ty_le_col  = luy_ke_col + 1
-    note_col   = ty_le_col + 1
     ws.column_dimensions[get_column_letter(luy_ke_col)].width = 14
     ws.column_dimensions[get_column_letter(ty_le_col)].width  = 22
-    ws.column_dimensions[get_column_letter(note_col)].width   = 20
-    total_cols = note_col
+    total_cols = ty_le_col
 
     date_range_str = (
         f"{all_dates[0].strftime('%d/%m/%Y')} - {all_dates[-1].strftime('%d/%m/%Y')}"
@@ -150,7 +148,7 @@ def _populate_sheet_real(ws, data: list[dict], kh_active: int, product_name: str
                     C_SUBTITLE, size=12, bold=False, italic=True)
 
     ws.row_dimensions[4].height = 30
-    headers = ["STT", "Chỉ tiêu / Nội dung"] + [lbl for lbl, _ in columns] + ["Lũy kế", "Tỷ lệ so với số KH active", "Ghi chú"]
+    headers = ["STT", "Chỉ tiêu / Nội dung"] + [lbl for lbl, _ in columns] + ["Lũy kế", "Tỷ lệ so với số KH active"]
     for c, hdr in enumerate(headers, start=1):
         cell = ws.cell(4, c, hdr)
         cell.fill = _fill(C_HEADER); cell.font = _font(bold=True, color="FFFFFF", size=11)
@@ -198,10 +196,6 @@ def _populate_sheet_real(ws, data: list[dict], kh_active: int, product_name: str
         tl_cell.font = _font(bold=bold); tl_cell.alignment = _align(); tl_cell.border = _border()
         if ty_le_val is not None:
             tl_cell.number_format = "0.00%"
-
-        note_cell = ws.cell(ri, note_col, "")
-        note_cell.fill = _fill(bg); note_cell.font = _font()
-        note_cell.alignment = _align(); note_cell.border = _border()
 
     ws.freeze_panes = "C5"
 

@@ -45,53 +45,30 @@ def _border():
     return Border(left=thin, right=thin, top=thin, bottom=thin)
 
 
-def _NOTE_TOTAL(lk: dict, kha: int) -> str:
-    ty_le_total = lk["total"] / kha if kha else 0
-    ty_le_huy   = lk["huy"] / lk["total"] if lk["total"] else 0
-    return (
-        f"Tỷ lệ thắc mắc/khiếu nại so với tổng số KH là {ty_le_total:.2%} so với trung bình "
-        f"trên các kênh khác là 0.4%\n"
-        f"Số cuộc gọi nhiều do KH chưa chủ động hủy được bảo hiểm chiếm {ty_le_huy:.1%} tổng số cuộc gọi"
-    )
-
-
-def _NOTE_HUY(lk: dict, kha: int) -> str:
-    ty_le = lk["so_huy"] / kha if kha else 0
-    return f"Tỷ lệ hủy bảo hiểm là {ty_le:.2%} so với trung bình các kênh khác là 5%"
-
-
-def _NOTE_TT(lk: dict, kha: int) -> str:
-    ty_le = (lk["total"] - lk["so_tiep_tuc"]) / kha if kha else 0
-    return (
-        f"Nếu trừ đi lượng KH tiếp tục sử dụng thì tỷ lệ thắc mắc/khiếu nại "
-        f"so với tổng số KH là {ty_le:.2%}"
-    )
-
-
 ROWS_DEF = [
-    (0, "",  "Tổng Số lượng cuộc gọi",                                              "total",       True,  False, False, _NOTE_TOTAL),
-    (0, "1", "Thái độ khách hàng",                                                  None,          True,  True,  False, ""),
-    (0, "",  "Hài lòng",                                                            "thai_do_hai_long",    False, False, False, ""),
-    (0, "",  "Bình thường",                                                         "thai_do_binh_thuong", False, False, False, ""),
-    (0, "",  "Gay gắt",                                                             "thai_do_gay_gat",     False, False, False, ""),
-    (0, "2", "Kênh tiếp nhận",                                                       None,          True,  True,  False, ""),
-    (0, "",  "Kênh bán",                                                                "mb_total",    True,  False, False, ""),
-    (0, "",  "Call",                                                                  "mb_call",     False, False, False, ""),
-    (0, "",  "Email",                                                                 "mb_email",    False, False, False, ""),
-    (0, "",  "Fanpage / mạng xã hội / website",                                      "mb_fanpage",  False, False, False, ""),
-    (0, "",  "LiteX",                                                                 "litex_total", True,  False, False, ""),
-    (0, "",  "Call",                                                                  "litex_call",  False, False, False, ""),
-    (0, "",  "Email",                                                                 "litex_email", False, False, False, ""),
-    (0, "",  "Fanpage / mạng xã hội / website",                                      "litex_fanpage", False, False, False, ""),
-    (0, "3", "Phân loại cuộc gọi",                                                   None,          True,  True,  False, ""),
-    (0, "",  "Khách hàng hỏi quyền lợi sản phẩm / thao tác",                        "tu_van",      False, False, False, ""),
-    (0, "",  "Khách hàng yêu cầu hủy dịch vụ",                                      "huy",         False, False, False, ""),
-    (1, "",  "- Số khách hàng hủy bảo hiểm",                                        "so_huy",      False, False, True,  _NOTE_HUY),
-    (1, "",  "- Số khách hàng tiếp tục sử dụng",                                    "so_tiep_tuc", False, False, True,  _NOTE_TT),
-    (1, "",  "- Không có kết quả (KH mất kết nối, ngắt máy, không cần hỗ trợ nữa)", "so_chua_kq", False, False, True,  ""),
-    (0, "",  "Số khách hàng có khiếu nại khác",                                      "khac",        False, False, False, ""),
-    (0, "",  "Khách hàng yêu cầu bồi thường",                                       "boi_thuong",  False, False, False, ""),
-    (0, "",  "Khách hàng khiếu nại lỗi thu phí",                                   "loi_thu_phi", False, False, False, ""),
+    (0, "",  "Tổng Số lượng cuộc gọi",                                              "total",       True,  False, False),
+    (0, "1", "Thái độ khách hàng",                                                  None,          True,  True,  False),
+    (0, "",  "Hài lòng",                                                            "thai_do_hai_long",    False, False, False),
+    (0, "",  "Bình thường",                                                         "thai_do_binh_thuong", False, False, False),
+    (0, "",  "Gay gắt",                                                             "thai_do_gay_gat",     False, False, False),
+    (0, "2", "Kênh tiếp nhận",                                                       None,          True,  True,  False),
+    (0, "",  "Kênh bán",                                                                "mb_total",    True,  False, False),
+    (0, "",  "Call",                                                                  "mb_call",     False, False, False),
+    (0, "",  "Email",                                                                 "mb_email",    False, False, False),
+    (0, "",  "Fanpage / mạng xã hội / website",                                      "mb_fanpage",  False, False, False),
+    (0, "",  "LiteX",                                                                 "litex_total", True,  False, False),
+    (0, "",  "Call",                                                                  "litex_call",  False, False, False),
+    (0, "",  "Email",                                                                 "litex_email", False, False, False),
+    (0, "",  "Fanpage / mạng xã hội / website",                                      "litex_fanpage", False, False, False),
+    (0, "3", "Phân loại cuộc gọi",                                                   None,          True,  True,  False),
+    (0, "",  "Khách hàng hỏi quyền lợi sản phẩm / thao tác",                        "tu_van",      False, False, False),
+    (0, "",  "Khách hàng yêu cầu hủy dịch vụ",                                      "huy",         False, False, False),
+    (1, "",  "- Số khách hàng hủy bảo hiểm",                                        "so_huy",      False, False, True),
+    (1, "",  "- Số khách hàng tiếp tục sử dụng",                                    "so_tiep_tuc", False, False, True),
+    (1, "",  "- Không có kết quả (KH mất kết nối, ngắt máy, không cần hỗ trợ nữa)", "so_chua_kq", False, False, True),
+    (0, "",  "Số khách hàng có khiếu nại khác",                                      "khac",        False, False, False),
+    (0, "",  "Khách hàng yêu cầu bồi thường",                                       "boi_thuong",  False, False, False),
+    (0, "",  "Khách hàng khiếu nại lỗi thu phí",                                   "loi_thu_phi", False, False, False),
 ]
 
 
@@ -127,11 +104,9 @@ def _populate_sheet_mb(ws, data: list[dict], kh_active: int, product_name: str =
         ws.column_dimensions[get_column_letter(i + 3)].width = 14
     luy_ke_col = len(columns) + 3
     ty_le_col  = luy_ke_col + 1
-    note_col   = ty_le_col + 1
     ws.column_dimensions[get_column_letter(luy_ke_col)].width = 14
     ws.column_dimensions[get_column_letter(ty_le_col)].width  = 22
-    ws.column_dimensions[get_column_letter(note_col)].width   = 55
-    total_cols = note_col
+    total_cols = ty_le_col
 
     date_range_str = (
         f"{all_dates[0].strftime('%d/%m/%Y')} - {all_dates[-1].strftime('%d/%m/%Y')}"
@@ -158,20 +133,14 @@ def _populate_sheet_mb(ws, data: list[dict], kh_active: int, product_name: str =
                     C_SUBTITLE, size=12, bold=False, italic=True)
 
     ws.row_dimensions[4].height = 30
-    headers = ["STT", "Chỉ tiêu / Nội dung"] + [lbl for lbl, _ in columns] + ["Lũy kế", "Tỷ lệ so với số KH active", "Ghi chú"]
+    headers = ["STT", "Chỉ tiêu / Nội dung"] + [lbl for lbl, _ in columns] + ["Lũy kế", "Tỷ lệ so với số KH active"]
     for c, hdr in enumerate(headers, start=1):
         cell = ws.cell(4, c, hdr)
         cell.fill = _fill(C_HEADER); cell.font = _font(bold=True, color="FFFFFF", size=11)
         cell.alignment = _align(); cell.border = _border()
 
-    luy_ke_all = {
-        key: sum((m.get(key) or 0) for _, m in columns)
-        for _, _, _, key, _, _, _, _ in ROWS_DEF if key
-    }
-
-    for ri, (_, stt, label, key, bold, is_section, is_sub, note) in enumerate(ROWS_DEF, start=5):
-        note_text = note(luy_ke_all, kh_active) if callable(note) else (note or None)
-        ws.row_dimensions[ri].height = 40 if note_text else 20
+    for ri, (_, stt, label, key, bold, is_section, is_sub) in enumerate(ROWS_DEF, start=5):
+        ws.row_dimensions[ri].height = 20
 
         if is_section:
             bg = C_SECTION
@@ -213,10 +182,6 @@ def _populate_sheet_mb(ws, data: list[dict], kh_active: int, product_name: str =
         tl_cell.font = _font(bold=bold); tl_cell.alignment = _align(); tl_cell.border = _border()
         if ty_le_val is not None:
             tl_cell.number_format = "0.00%"
-
-        note_cell = ws.cell(ri, note_col, note_text)
-        note_cell.fill = _fill(bg); note_cell.font = _font(size=10)
-        note_cell.alignment = _align(h="left", wrap=True); note_cell.border = _border()
 
     ws.freeze_panes = "C5"
 
