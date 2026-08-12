@@ -10,6 +10,9 @@ from pipeline.classify import (
 
 VALID_DATE_RANGE = (date(2026, 4, 22), date.max)
 
+MB_LOAI   = ("DVKH MB247", "Email MB", "BIDV Call")
+CTBH_LOAI = ("CTBH Call", "CTBH Email", "CTBH Fanpage")
+
 HARDCODED_METRICS_REAL = {
     date(2026, 5, 2): {
         "total": 199, "mb_total": 0, "mb_call": 0, "mb_email": 0, "mb_fanpage": 0,
@@ -70,8 +73,9 @@ def _is_thai_do_hai_long(n: str) -> bool:
 
 
 def calc_real(rows: list[dict], seen_bt: set | None = None) -> dict:
-    mb    = [r for r in rows if r["loai"] in ("DVKH MB247", "Email MB")]
-    litex = [r for r in rows if r["loai"] not in ("DVKH MB247", "Email MB")]
+    mb    = [r for r in rows if r["loai"] in MB_LOAI]
+    ctbh  = [r for r in rows if r["loai"] in CTBH_LOAI]
+    litex = [r for r in rows if r["loai"] not in MB_LOAI and r["loai"] not in CTBH_LOAI]
 
     goi_ra   = [r for r in litex if r["loai"] == "Gọi ra"]
     kh_ko_tl = [r for r in goi_ra if _norm(r["ket_qua"]) in KHOONG_KQ]
@@ -83,7 +87,7 @@ def calc_real(rows: list[dict], seen_bt: set | None = None) -> dict:
     so_chua_kq = len(kq_rows)
     khac_rows  = [r for r in rows if _classify(r) == "khac"]
 
-    unclassified = [r for r in litex if r["loai"] not in ("Gọi vào", "Gọi ra", "Email LiteX")]
+    unclassified = [r for r in litex if r["loai"] not in ("Gọi vào", "Gọi ra", "Email LiteX", "Mạng xã hội")]
     if unclassified:
         vals = {r["loai"].encode("ascii", "replace").decode() for r in unclassified}
         print(f"[DEBUG] LiteX unclassified ({len(unclassified)} rows): {vals}")
@@ -91,7 +95,7 @@ def calc_real(rows: list[dict], seen_bt: set | None = None) -> dict:
     return {
         "total":             len(rows),
         "mb_total":          len(mb),
-        "mb_call":           sum(1 for r in mb if r["loai"] == "DVKH MB247"),
+        "mb_call":           sum(1 for r in mb if r["loai"] in ("DVKH MB247", "BIDV Call")),
         "mb_email":          sum(1 for r in mb if r["loai"] == "Email MB"),
         "mb_fanpage":        0,
         "litex_total":       len(litex),
@@ -100,6 +104,10 @@ def calc_real(rows: list[dict], seen_bt: set | None = None) -> dict:
         "litex_kh_ko_tl":    len(kh_ko_tl),
         "litex_email":       sum(1 for r in litex if r["loai"] == "Email LiteX"),
         "litex_fanpage":     sum(1 for r in litex if r["loai"] == "Mạng xã hội"),
+        "ctbh_total":        len(ctbh),
+        "ctbh_call":         sum(1 for r in ctbh if r["loai"] == "CTBH Call"),
+        "ctbh_email":        sum(1 for r in ctbh if r["loai"] == "CTBH Email"),
+        "ctbh_fanpage":      sum(1 for r in ctbh if r["loai"] == "CTBH Fanpage"),
         "tu_van":            sum(1 for r in rows if _classify(r) == "tu_van"),
         "huy":               len(huy_rows),
         "so_huy":            so_huy,
@@ -129,8 +137,9 @@ def calc_real(rows: list[dict], seen_bt: set | None = None) -> dict:
 
 
 def calc_mb(rows: list[dict], seen_bt: set | None = None) -> dict:
-    mb    = [r for r in rows if r["loai"] in ("DVKH MB247", "Email MB")]
-    litex = [r for r in rows if r["loai"] not in ("DVKH MB247", "Email MB")]
+    mb    = [r for r in rows if r["loai"] in MB_LOAI]
+    ctbh  = [r for r in rows if r["loai"] in CTBH_LOAI]
+    litex = [r for r in rows if r["loai"] not in MB_LOAI and r["loai"] not in CTBH_LOAI]
 
     huy_rows   = [r for r in rows if _classify(r) == "huy"]
     so_huy     = sum(1 for r in huy_rows if _norm(r["ket_qua"]) in HUY_KQ)
@@ -140,13 +149,17 @@ def calc_mb(rows: list[dict], seen_bt: set | None = None) -> dict:
     return {
         "total":         len(rows),
         "mb_total":      len(mb),
-        "mb_call":       sum(1 for r in mb if r["loai"] == "DVKH MB247"),
+        "mb_call":       sum(1 for r in mb if r["loai"] in ("DVKH MB247", "BIDV Call")),
         "mb_email":      sum(1 for r in mb if r["loai"] == "Email MB"),
         "mb_fanpage":    0,
         "litex_total":   len(litex),
         "litex_call":    sum(1 for r in litex if r["loai"] in ("Gọi vào", "Gọi ra")),
         "litex_email":   sum(1 for r in litex if r["loai"] == "Email LiteX"),
         "litex_fanpage": sum(1 for r in litex if r["loai"] == "Mạng xã hội"),
+        "ctbh_total":    len(ctbh),
+        "ctbh_call":     sum(1 for r in ctbh if r["loai"] == "CTBH Call"),
+        "ctbh_email":    sum(1 for r in ctbh if r["loai"] == "CTBH Email"),
+        "ctbh_fanpage":  sum(1 for r in ctbh if r["loai"] == "CTBH Fanpage"),
         "tu_van":        sum(1 for r in rows if _classify(r) == "tu_van"),
         "huy":           len(huy_rows),
         "so_huy":        so_huy,

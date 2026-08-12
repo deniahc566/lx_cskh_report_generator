@@ -16,6 +16,8 @@ _LOAI_MAP_NEW = {
     "email - mb 24/7": "Email MB",
     "email mb247":     "Email MB",
     "mạng xã hội":    "Mạng xã hội",
+    "bic - tổng đài":  "CTBH Call",   # BIC insurance call center → CTBH channel
+    "bidv - tổng đài": "BIDV Call",   # BIDV bank call center → Kênh bán
 }
 
 _LOAI_MAP_OLD = {
