@@ -157,8 +157,22 @@ def save_daily_ty_le(
     data_date,
     ty_le_by_key: dict[str, float],
 ) -> None:
+    import math
     conn = get_conn()
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS daily_ty_le_cache (
+            product_name VARCHAR,
+            report_type  VARCHAR,
+            data_date    DATE,
+            metric_key   VARCHAR,
+            ty_le        DOUBLE,
+            saved_at     TIMESTAMP DEFAULT now(),
+            PRIMARY KEY (product_name, report_type, data_date, metric_key)
+        )
+    """)
     for key, ty_le in ty_le_by_key.items():
+        if not isinstance(ty_le, (int, float)) or not math.isfinite(ty_le):
+            continue
         conn.execute(
             """
             INSERT OR REPLACE INTO daily_ty_le_cache
