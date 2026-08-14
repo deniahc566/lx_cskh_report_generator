@@ -209,9 +209,17 @@ def _populate_sheet_mb(ws, data: list[dict], kh_active: int, product_name: str =
             bd_val = None
         bd_cell = ws.cell(ri, bien_dong_col, bd_val)
         bd_cell.fill = _fill(C_BIEN_DONG if bd_val is not None else bg)
-        bd_cell.font = _font(bold=bold); bd_cell.alignment = _align(); bd_cell.border = _border()
+        bd_cell.alignment = _align(); bd_cell.border = _border()
         if bd_val is not None:
-            bd_cell.number_format = "0.00%"
+            bd_cell.number_format = "+0.00000%;-0.00000%;0.00000%"
+            if bd_val > 0:
+                bd_cell.font = _font(bold=bold, color="FF0000")
+            elif bd_val < 0:
+                bd_cell.font = _font(bold=bold, color="00B050")
+            else:
+                bd_cell.font = _font(bold=bold)
+        else:
+            bd_cell.font = _font(bold=bold)
 
     cur_ty_le = {
         key: (last_m.get(key) or 0) / kh_active
