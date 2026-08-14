@@ -210,11 +210,16 @@ def _populate_sheet_mb(ws, data: list[dict], kh_active: int, product_name: str =
         gay_gat_lk  = luy_ke_all.get("thai_do_gay_gat", 0)
         huy_lk      = luy_ke_all.get("huy", 0)
         tiep_tuc_lk = luy_ke_all.get("so_tiep_tuc", 0)
+        last_day_total = last_m.get("total", 0)
+        prev_day_total = prev_m.get("total", 0) if prev_m else 0
+        prev_date_str  = all_dates[-2].strftime("%d/%m/%Y") if len(all_dates) >= 2 else ""
         ty_le_giu_chan = f"{tiep_tuc_lk / huy_lk:.2%}" if huy_lk else "N/A"
         note_text = (
             f"• Thắc mắc/khiếu nại về sản phẩm đến hết ngày "
             f"{all_dates[-1].strftime('%d/%m/%Y')} là {total_lk:,} trên {kh_active:,} "
-            f"khách hàng đăng ký thành công.\n"
+            f"khách hàng đăng ký thành công tương đương với {total_lk / kh_active:.2%}.\n"
+            f"• Số khiếu nại phát sinh ngày {all_dates[-1].strftime('%d/%m/%Y')} là "
+            f"{last_day_total:,} so với {prev_day_total:,} của ngày {prev_date_str}.\n"
             f"• Tỷ lệ khách hàng phản ứng gay gắt là {gay_gat_lk / kh_active:.2%}.\n"
             f"• Tỷ lệ thắc mắc/khiếu nại so với tổng số KH là "
             f"{total_lk / kh_active:.2%} so với trung bình trên các kênh khác là khoảng 1%.\n"
@@ -223,7 +228,7 @@ def _populate_sheet_mb(ws, data: list[dict], kh_active: int, product_name: str =
             f"so với tổng số KH là {(total_lk - tiep_tuc_lk) / kh_active:.2%}."
         )
         note_row = 5 + len(ROWS_DEF) + 1
-        ws.row_dimensions[note_row].height = 100
+        ws.row_dimensions[note_row].height = 120
         ws.merge_cells(
             start_row=note_row, start_column=1,
             end_row=note_row, end_column=total_cols,
