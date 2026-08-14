@@ -36,7 +36,10 @@ _KQMAP_NEW = {
     "kq_khong_co_kq_huy":     "Không có kết quả",
     "kq_khong_co_kq_khac":    "Không có kết quả",
     "kq_khong_co_kq_bt":      "Không có kết quả",
+    "kq_khong_co_kq_ltp":     "Không có kết quả",
     "kq_khong_tim_thay_don":  "Không tìm thấy GCN",
+    "kq_hoan_thanh_bt":       "Hoàn thành bồi thường",
+    "kq_hoan_thanh_ltp":      "Hoàn thành tư vấn",
 }
 
 # Values that mean "no real name provided"
