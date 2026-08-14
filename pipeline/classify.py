@@ -9,7 +9,7 @@ def _norm(text: str) -> str:
 
 _HUY_KW = ("hủy", "huỷ")
 
-KHOONG_KQ = {_norm("Không có kết quả"), _norm("Chưa có kết quả"), _norm("Không tìm thấy GCN"), ""}
+KHOONG_KQ = {_norm("Không có kết quả"), _norm("Chưa có kết quả"), _norm("Không tìm thấy GCN"), _norm("kq_khong_tim_thay_don"), ""}
 HUY_KQ    = {_norm("Yêu cầu hủy"), _norm("Đã chuyển IT hủy")}
 TIEP_TUC_KQ = {_norm("KH tiếp tục sử dụng"), _norm("Hoàn thành tư vấn"), _norm("Tư Vấn")}
 
