@@ -9,8 +9,9 @@ def _norm(text: str) -> str:
 
 _HUY_KW = ("hủy", "huỷ")
 
-KHOONG_KQ = {_norm("Không có kết quả"), _norm("Chưa có kết quả")}
+KHOONG_KQ = {_norm("Không có kết quả"), _norm("Chưa có kết quả"), _norm("Không tìm thấy GCN"), ""}
 HUY_KQ    = {_norm("Yêu cầu hủy"), _norm("Đã chuyển IT hủy")}
+TIEP_TUC_KQ = {_norm("KH tiếp tục sử dụng"), _norm("Hoàn thành tư vấn")}
 
 _KO_NGHE_KW = frozenset([
     "không nghe máy", "k nghe máy", "ko nghe máy",

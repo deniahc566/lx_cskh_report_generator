@@ -4,7 +4,7 @@ from collections import defaultdict
 from datetime import date
 
 from pipeline.classify import (
-    _norm, _classify, KHOONG_KQ, HUY_KQ,
+    _norm, _classify, KHOONG_KQ, HUY_KQ, TIEP_TUC_KQ,
     _is_ko_nghe, _is_da_ho_tro, _is_chua_du_tt, _is_goi_nham,
 )
 
@@ -82,7 +82,7 @@ def calc_real(rows: list[dict], seen_bt: set | None = None) -> dict:
 
     huy_rows   = [r for r in rows if _classify(r) == "huy"]
     so_huy     = sum(1 for r in huy_rows if _norm(r["ket_qua"]) in HUY_KQ)
-    so_tt      = sum(1 for r in huy_rows if _norm(r["ket_qua"]) == _norm("KH tiếp tục sử dụng"))
+    so_tt      = sum(1 for r in huy_rows if _norm(r["ket_qua"]) in TIEP_TUC_KQ)
     kq_rows    = [r for r in huy_rows if _norm(r["ket_qua"]) in KHOONG_KQ]
     so_chua_kq = len(kq_rows)
     khac_rows  = [r for r in rows if _classify(r) == "khac"]
@@ -143,7 +143,7 @@ def calc_mb(rows: list[dict], seen_bt: set | None = None) -> dict:
 
     huy_rows   = [r for r in rows if _classify(r) == "huy"]
     so_huy     = sum(1 for r in huy_rows if _norm(r["ket_qua"]) in HUY_KQ)
-    so_tt      = sum(1 for r in huy_rows if _norm(r["ket_qua"]) == _norm("KH tiếp tục sử dụng"))
+    so_tt      = sum(1 for r in huy_rows if _norm(r["ket_qua"]) in TIEP_TUC_KQ)
     so_chua_kq = sum(1 for r in huy_rows if _norm(r["ket_qua"]) in KHOONG_KQ)
 
     return {
