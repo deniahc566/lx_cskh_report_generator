@@ -157,7 +157,7 @@ def save_daily_ty_le(
     data_date,
     ty_le_by_key: dict[str, float],
 ) -> None:
-    import math
+    import math, traceback as _tb
     conn = get_conn()
     conn.execute("""
         CREATE TABLE IF NOT EXISTS daily_ty_le_cache (
@@ -173,14 +173,23 @@ def save_daily_ty_le(
     for key, ty_le in ty_le_by_key.items():
         if not isinstance(ty_le, (int, float)) or not math.isfinite(ty_le):
             continue
-        conn.execute(
-            """
-            INSERT OR REPLACE INTO daily_ty_le_cache
-                (product_name, report_type, data_date, metric_key, ty_le, saved_at)
-            VALUES (?, ?, ?, ?, ?, now())
-            """,
-            [product_name, report_type, data_date, key, ty_le],
-        )
+        try:
+            conn.execute(
+                """
+                INSERT OR REPLACE INTO daily_ty_le_cache
+                    (product_name, report_type, data_date, metric_key, ty_le, saved_at)
+                VALUES (?, ?, ?, ?, ?, now())
+                """,
+                [product_name, report_type, data_date, key, float(ty_le)],
+            )
+        except Exception as exc:
+            print(
+                f"[save_daily_ty_le] SKIP row — "
+                f"product={product_name!r} type={report_type!r} date={data_date!r} "
+                f"key={key!r} ty_le={ty_le!r} ({type(ty_le).__name__})\n"
+                f"  Error: {exc}\n"
+                + _tb.format_exc()
+            )
 
 
 def load_daily_ty_le(
