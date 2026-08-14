@@ -13,6 +13,7 @@ from pipeline.calc import PRODUCT_START_DATES, VALID_DATE_RANGE
 from pipeline.db import (
     fetch_cskh_rows, fetch_mb_email_rows,
     get_date_range, load_kh_active_cache, save_kh_active_cache,
+    save_daily_ty_le, load_daily_ty_le,
 )
 from pipeline.reclassify import apply_mb_reclassification
 from pipeline.report_mb import build_report_mb
@@ -113,20 +114,46 @@ if st.button("Tạo báo cáo", type="primary"):
                     st.warning(f"  [{pname}] Không lấy được KH active: {exc}. Dùng 0.")
                     kh_active_by_product[pname] = 0
 
+        # ── Load prev ty_le từ cache để tính biến động ───────────────────────
+        def _row_dates(rows):
+            return sorted({r.get("event_date") or r.get("date") for r in rows
+                           if r.get("event_date") or r.get("date")})
+
+        prev_ty_le_real: dict[str, dict[str, float]] = {}
+        prev_ty_le_mb:   dict[str, dict[str, float]] = {}
+        for pname, rows in products.items():
+            dates = _row_dates(rows)
+            if len(dates) >= 2:
+                prev_date = dates[-2]
+                prev_ty_le_real[pname] = load_daily_ty_le(pname, "real", prev_date)
+                prev_ty_le_mb[pname]   = load_daily_ty_le(pname, "mb",   prev_date)
+
         # ── Build reports ─────────────────────────────────────────────────────
         report_bytes_real = None
         report_bytes_mb   = None
 
         if report_type in ("Báo cáo LiteX", "Cả hai"):
             st.write("Đang tạo Báo cáo LiteX...")
-            report_bytes_real = build_report_real(products, kh_active_by_product)
+            report_bytes_real, cur_ty_le_real = build_report_real(
+                products, kh_active_by_product, prev_ty_le_real
+            )
+            for pname, ty_le in cur_ty_le_real.items():
+                dates = _row_dates(products[pname])
+                if dates:
+                    save_daily_ty_le(pname, "real", dates[-1], ty_le)
 
         if report_type in ("Báo cáo cho Đối tác", "Cả hai"):
             st.write("Đang tạo Báo cáo cho Đối tác...")
             mb_products: dict[str, list] = {}
             for pname, rows in products.items():
                 mb_products[pname] = apply_mb_reclassification(rows)
-            report_bytes_mb = build_report_mb(mb_products, kh_active_by_product)
+            report_bytes_mb, cur_ty_le_mb = build_report_mb(
+                mb_products, kh_active_by_product, prev_ty_le_mb
+            )
+            for pname, ty_le in cur_ty_le_mb.items():
+                dates = _row_dates(products[pname])
+                if dates:
+                    save_daily_ty_le(pname, "mb", dates[-1], ty_le)
 
         status.update(label="Hoàn thành!", state="complete")
 

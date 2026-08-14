@@ -45,5 +45,17 @@ conn.execute("""
     )
 """)
 
+conn.execute("""
+    CREATE TABLE IF NOT EXISTS daily_ty_le_cache (
+        product_name VARCHAR,
+        report_type  VARCHAR,
+        data_date    DATE,
+        metric_key   VARCHAR,
+        ty_le        DOUBLE,
+        saved_at     TIMESTAMP DEFAULT now(),
+        PRIMARY KEY (product_name, report_type, data_date, metric_key)
+    )
+""")
+
 conn.close()
-print("Tables created (or already exist): cskh_raw, mb_email_raw, kh_active_cache")
+print("Tables created (or already exist): cskh_raw, mb_email_raw, kh_active_cache, daily_ty_le_cache")

@@ -149,6 +149,45 @@ def save_kh_active_cache(product_name: str, value: int) -> None:
     )
 
 
+# ── Daily tỷ lệ cache ─────────────────────────────────────────────────────────
+
+def save_daily_ty_le(
+    product_name: str,
+    report_type: str,
+    data_date,
+    ty_le_by_key: dict[str, float],
+) -> None:
+    conn = get_conn()
+    for key, ty_le in ty_le_by_key.items():
+        conn.execute(
+            """
+            INSERT OR REPLACE INTO daily_ty_le_cache
+                (product_name, report_type, data_date, metric_key, ty_le, saved_at)
+            VALUES (?, ?, ?, ?, ?, now())
+            """,
+            [product_name, report_type, data_date, key, ty_le],
+        )
+
+
+def load_daily_ty_le(
+    product_name: str,
+    report_type: str,
+    data_date,
+) -> dict[str, float]:
+    conn = get_conn()
+    try:
+        rows = conn.execute(
+            """
+            SELECT metric_key, ty_le FROM daily_ty_le_cache
+            WHERE product_name = ? AND report_type = ? AND data_date = ?
+            """,
+            [product_name, report_type, data_date],
+        ).fetchall()
+        return {key: val for key, val in rows}
+    except Exception:
+        return {}
+
+
 # ── Stats ─────────────────────────────────────────────────────────────────────
 
 def get_row_counts() -> dict[str, int]:

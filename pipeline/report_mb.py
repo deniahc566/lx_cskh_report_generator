@@ -81,7 +81,7 @@ def _get_date(r: dict):
     return r.get("date") or r.get("event_date")
 
 
-def _populate_sheet_mb(ws, data: list[dict], kh_active: int, product_name: str = ""):
+def _populate_sheet_mb(ws, data: list[dict], kh_active: int, product_name: str = "", prev_ty_le: dict[str, float] | None = None) -> dict[str, float]:
     data = [r for r in data if VALID_DATE_RANGE[0] <= _get_date(r) <= VALID_DATE_RANGE[1]]
 
     product_start = PRODUCT_START_DATES.get(product_name)
@@ -197,13 +197,26 @@ def _populate_sheet_mb(ws, data: list[dict], kh_active: int, product_name: str =
         if ty_le_val is not None:
             tl_cell.number_format = "0.00%"
 
-        bd_val = ((last_m.get(key) or 0) - (prev_m.get(key) or 0)) / kh_active \
-            if (key and prev_m and kh_active) else None
+        if key and kh_active:
+            cur_ty_le_val = (last_m.get(key) or 0) / kh_active
+            if prev_ty_le is not None:
+                bd_val = cur_ty_le_val - prev_ty_le.get(key, 0.0)
+            elif prev_m:
+                bd_val = cur_ty_le_val - (prev_m.get(key) or 0) / kh_active
+            else:
+                bd_val = None
+        else:
+            bd_val = None
         bd_cell = ws.cell(ri, bien_dong_col, bd_val)
         bd_cell.fill = _fill(C_BIEN_DONG if bd_val is not None else bg)
         bd_cell.font = _font(bold=bold); bd_cell.alignment = _align(); bd_cell.border = _border()
         if bd_val is not None:
             bd_cell.number_format = "0.00%"
+
+    cur_ty_le = {
+        key: (last_m.get(key) or 0) / kh_active
+        for _, _, _, key, *_ in ROWS_DEF if key
+    } if (last_m and kh_active) else {}
 
     if all_dates and kh_active:
         total_lk    = luy_ke_all.get("total", 0)
@@ -240,14 +253,17 @@ def _populate_sheet_mb(ws, data: list[dict], kh_active: int, product_name: str =
         nc.border = _border()
 
     ws.freeze_panes = "C5"
+    return cur_ty_le
 
 
 def build_report_mb(
     products: dict[str, list[dict]],
     kh_active_by_product: dict[str, int],
-) -> bytes:
-    """Build bc_cskh_mb (reclassified) report. Returns Excel bytes."""
+    prev_ty_le_by_product: dict[str, dict[str, float]] | None = None,
+) -> tuple[bytes, dict[str, dict[str, float]]]:
+    """Build bc_cskh_mb (reclassified) report. Returns (Excel bytes, cur_ty_le_all)."""
     wb = openpyxl.Workbook()
+    cur_ty_le_all: dict[str, dict[str, float]] = {}
     first = True
     for sheet_name, data in products.items():
         ws = wb.active if first else wb.create_sheet(sheet_name)
@@ -255,8 +271,11 @@ def build_report_mb(
             ws.title = sheet_name
             first = False
         kha = kh_active_by_product.get(sheet_name, 0)
-        _populate_sheet_mb(ws, data, kha, product_name=sheet_name)
+        prev_ty_le = (prev_ty_le_by_product or {}).get(sheet_name)
+        cur_ty_le_all[sheet_name] = _populate_sheet_mb(
+            ws, data, kha, product_name=sheet_name, prev_ty_le=prev_ty_le
+        )
 
     buf = io.BytesIO()
     wb.save(buf)
-    return buf.getvalue()
+    return buf.getvalue(), cur_ty_le_all
