@@ -229,12 +229,14 @@ def _populate_sheet_mb(ws, data: list[dict], kh_active: int, product_name: str =
     if all_dates and kh_active:
         total_lk    = luy_ke_all.get("total", 0)
         gay_gat_lk  = luy_ke_all.get("thai_do_gay_gat", 0)
-        huy_lk      = luy_ke_all.get("huy", 0)
-        tiep_tuc_lk = luy_ke_all.get("so_tiep_tuc", 0)
+        huy_lk            = luy_ke_all.get("huy", 0)
+        tiep_tuc_lk       = luy_ke_all.get("so_tiep_tuc", 0)
+        huy_litex_lk      = luy_ke_all.get("huy_litex", 0)
+        tiep_tuc_litex_lk = luy_ke_all.get("so_tiep_tuc_litex", 0)
         last_day_total = last_m.get("total", 0)
         prev_day_total = prev_m.get("total", 0) if prev_m else 0
         prev_date_str  = all_dates[-2].strftime("%d/%m/%Y") if len(all_dates) >= 2 else ""
-        ty_le_giu_chan = f"{tiep_tuc_lk / huy_lk:.2%}" if huy_lk else "N/A"
+        ty_le_giu_chan = f"{tiep_tuc_litex_lk / huy_litex_lk:.2%}" if huy_litex_lk else "N/A"
         note_text = (
             f"• Thắc mắc/khiếu nại về sản phẩm đến hết ngày "
             f"{all_dates[-1].strftime('%d/%m/%Y')} là {total_lk:,} trên {kh_active:,} "

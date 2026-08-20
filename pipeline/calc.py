@@ -87,6 +87,9 @@ def calc_real(rows: list[dict], seen_bt: set | None = None) -> dict:
     so_chua_kq = len(kq_rows)
     khac_rows  = [r for r in rows if _classify(r) == "khac"]
 
+    huy_litex_rows = [r for r in huy_rows if r["loai"] not in MB_LOAI and r["loai"] not in CTBH_LOAI]
+    so_tt_litex    = sum(1 for r in huy_litex_rows if _norm(r["ket_qua"]) in TIEP_TUC_KQ)
+
     unclassified = [r for r in litex if r["loai"] not in ("Gọi vào", "Gọi ra", "Email LiteX", "Mạng xã hội")]
     if unclassified:
         vals = {r["loai"].encode("ascii", "replace").decode() for r in unclassified}
@@ -110,8 +113,10 @@ def calc_real(rows: list[dict], seen_bt: set | None = None) -> dict:
         "ctbh_fanpage":      sum(1 for r in ctbh if r["loai"] == "CTBH Fanpage"),
         "tu_van":            sum(1 for r in rows if _classify(r) == "tu_van"),
         "huy":               len(huy_rows),
+        "huy_litex":         len(huy_litex_rows),
         "so_huy":            so_huy,
         "so_tiep_tuc":       so_tt,
+        "so_tiep_tuc_litex": so_tt_litex,
         "so_chua_kq":        so_chua_kq,
         "so_chua_kq_ko_nghe":    sum(1 for r in kq_rows if _is_ko_nghe(_norm(r["noi_dung"]), _norm(r["ket_qua"]))),
         "so_chua_kq_da_ho_tro":  sum(1 for r in kq_rows if _is_da_ho_tro(_norm(r["noi_dung"]), _norm(r["ket_qua"]))),
@@ -146,6 +151,9 @@ def calc_mb(rows: list[dict], seen_bt: set | None = None) -> dict:
     so_tt      = sum(1 for r in huy_rows if _norm(r["ket_qua"]) in TIEP_TUC_KQ)
     so_chua_kq = sum(1 for r in huy_rows if _norm(r["ket_qua"]) in KHOONG_KQ)
 
+    huy_litex_rows = [r for r in huy_rows if r["loai"] not in MB_LOAI and r["loai"] not in CTBH_LOAI]
+    so_tt_litex    = sum(1 for r in huy_litex_rows if _norm(r["ket_qua"]) in TIEP_TUC_KQ)
+
     return {
         "total":         len(rows),
         "mb_total":      len(mb),
@@ -162,8 +170,10 @@ def calc_mb(rows: list[dict], seen_bt: set | None = None) -> dict:
         "ctbh_fanpage":  sum(1 for r in ctbh if r["loai"] == "CTBH Fanpage"),
         "tu_van":        sum(1 for r in rows if _classify(r) == "tu_van"),
         "huy":           len(huy_rows),
+        "huy_litex":     len(huy_litex_rows),
         "so_huy":        so_huy,
         "so_tiep_tuc":   so_tt,
+        "so_tiep_tuc_litex": so_tt_litex,
         "so_chua_kq":    so_chua_kq,
         "khac":          sum(1 for r in rows if _classify(r) == "khac"),
         "boi_thuong":    _count_boi_thuong(rows, seen_bt),
