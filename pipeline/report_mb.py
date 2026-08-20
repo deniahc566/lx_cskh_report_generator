@@ -4,7 +4,7 @@ from __future__ import annotations
 import io
 import sys
 from collections import defaultdict
-from datetime import date, datetime
+from datetime import date, datetime, timedelta, timezone
 
 import openpyxl
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
@@ -119,7 +119,7 @@ def _populate_sheet_mb(ws, data: list[dict], kh_active: int, product_name: str =
         f"{all_dates[0].strftime('%d/%m/%Y')} - {all_dates[-1].strftime('%d/%m/%Y')}"
         if len(all_dates) > 1 else all_dates[0].strftime("%d/%m/%Y")
     )
-    timestamp_str = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+    timestamp_str = datetime.now(timezone(timedelta(hours=7))).strftime("%d/%m/%Y %H:%M:%S")
 
     def merge_and_style(row, c1, c2, text, bg, fg="FFFFFF", bold=True, size=13, italic=False, h="center"):
         ws.merge_cells(start_row=row, start_column=c1, end_row=row, end_column=c2)
@@ -213,9 +213,9 @@ def _populate_sheet_mb(ws, data: list[dict], kh_active: int, product_name: str =
         if bd_val is not None:
             bd_cell.number_format = "+0.00000%;-0.00000%;0.00000%"
             if bd_val > 0:
-                bd_cell.font = _font(bold=bold, color="C00000")
-            elif bd_val < 0:
                 bd_cell.font = _font(bold=bold, color="375623")
+            elif bd_val < 0:
+                bd_cell.font = _font(bold=bold, color="C00000")
             else:
                 bd_cell.font = _font(bold=bold)
         else:
