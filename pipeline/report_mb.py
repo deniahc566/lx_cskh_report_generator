@@ -212,10 +212,11 @@ def _populate_sheet_mb(ws, data: list[dict], kh_active: int, product_name: str =
         bd_cell.alignment = _align(); bd_cell.border = _border()
         if bd_val is not None:
             bd_cell.number_format = "+0.00000%;-0.00000%;0.00000%"
+            is_retention = key == "so_tiep_tuc"
             if bd_val > 0:
-                bd_cell.font = _font(bold=bold, color="375623")
+                bd_cell.font = _font(bold=bold, color="375623" if is_retention else "C00000")
             elif bd_val < 0:
-                bd_cell.font = _font(bold=bold, color="C00000")
+                bd_cell.font = _font(bold=bold, color="C00000" if is_retention else "375623")
             else:
                 bd_cell.font = _font(bold=bold)
         else:
