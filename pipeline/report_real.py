@@ -245,8 +245,8 @@ def _populate_sheet_real(ws, data: list[dict], kh_active: int, product_name: str
         gay_gat_lk  = luy_ke_all.get("thai_do_gay_gat", 0)
         huy_lk            = luy_ke_all.get("huy", 0)
         tiep_tuc_lk       = luy_ke_all.get("so_tiep_tuc", 0)
-        huy_litex_lk      = luy_ke_all.get("huy_litex", 0)
-        tiep_tuc_litex_lk = luy_ke_all.get("so_tiep_tuc_litex", 0)
+        huy_litex_lk      = sum((m.get("huy_litex") or 0) for _, m in columns)
+        tiep_tuc_litex_lk = sum((m.get("so_tiep_tuc_litex") or 0) for _, m in columns)
         last_day_total = last_m.get("total", 0)
         prev_day_total = prev_m.get("total", 0) if prev_m else 0
         prev_date_str  = all_dates[-2].strftime("%d/%m/%Y") if len(all_dates) >= 2 else ""
